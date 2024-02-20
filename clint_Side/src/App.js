@@ -1,8 +1,10 @@
-import "./App.css";
-import Layout from "./component/Layout/Layout";
+import React from 'react'
+import Router from './Router/router'
 
-function App() {
-  return <Layout />;
+const App = () => {
+  return (
+    <Router/>
+  )
 }
 
-export default App;
+export default App

@@ -2,7 +2,7 @@ import React from 'react'
 import logo from '../image/unnamed.png'
 export default function Footer() {
   return (
-    <footer className="bg-black dark:bg-gray-300">
+    <footer className="bg-black dark:bg-gray-300 overflow-hidden">
       <div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
@@ -85,7 +85,7 @@ export default function Footer() {
           <div className="flex mt-4 sm:justify-center sm:mt-0">
             <a
               href="/"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-orange-600"
             >
               <svg
                 className="w-4 h-4"
@@ -104,7 +104,7 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-orange-600 ms-5"
             >
               <svg
                 className="w-4 h-4"
@@ -119,7 +119,7 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-orange-600 ms-5"
             >
               <svg
                 className="w-4 h-4"
@@ -138,7 +138,7 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-orange-600 ms-5"
             >
               <svg
                 className="w-4 h-4"
@@ -157,7 +157,7 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-orange-600 ms-5"
             >
               <svg
                 className="w-4 h-4"

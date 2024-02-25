@@ -25,7 +25,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="block fixed w-screen px-4 py-2 mx-auto text-black bg-white border shadow-md rounded-e-xl border-white/80 bg-opacity-80 backdrop-blur-2xl backdrop-saturate-200 lg:px-8 lg:py-4">
+    <nav className="block fixed w-screen px-4 z-20 py-2 mx-auto text-black bg-white border shadow-md rounded-b-xl  border-white/80 bg-opacity-80 backdrop-blur-2xl backdrop-saturate-200 lg:px-8 lg:py-4">
       <div className={`container flex flex-col lg:flex-row ${isMenuOpen ? 'justify-center' : 'justify-between'} items-center mx-auto text-blue-gray-900`}>
         {/* Logo and Mobile Menu Button */}
         <div className="flex justify-around items-center w-full lg:w-auto">

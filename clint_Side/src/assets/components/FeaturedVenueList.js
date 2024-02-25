@@ -1,47 +1,58 @@
-import React from 'react'
+import React,{useState} from 'react';
+import Carousel from 'react-multi-carousel';
+import 'react-multi-carousel/lib/styles.css';
+import { Link } from 'react-router-dom';
 
-export default function FeaturedVenueList() {
+const Index = () => {
+  const [isMoving, setIsMoving] = useState(false);
+  const cardData = [
+    { id: 1, title: "Beach House", price: "$200/night", location: "Maldives", imageUrl: "https://via.placeholder.com/300" },
+    { id: 2, title: "Mountain Cabin", price: "$150/night", location: "Switzerland", imageUrl: "https://via.placeholder.com/300" },
+    { id: 3, title: "City Apartment", price: "$100/night", location: "New York", imageUrl: "https://via.placeholder.com/300" },
+    { id: 4, title: "Lake Cottage", price: "$180/night", location: "Canada", imageUrl: "https://via.placeholder.com/300" }
+  ];
+
+  const responsive = {
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 3,
+      slidesToSlide: 3
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 2,
+      slidesToSlide: 2
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1,
+      slidesToSlide: 1
+    }
+  };
+
   return (
-    <>
-      {/* Slider */}
-      <div
-        data-hs-carousel='{
-    "loadingClasses": "opacity-0"
-  }'
-        className="relative"
-      >
-        <div className="hs-carousel relative overflow-hidden w-full min-h-[350px] bg-green-200 rounded-lg">
-          <div className="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap transition-transform duration-700 opacity-0">
-            <div className="hs-carousel-slide">
-              <div className="flex justify-center h-full bg-gray-100 p-6">
-                <span className="self-center text-4xl transition duration-700">
-                  First slide
-                </span>
-              </div>
-            </div>
-            <div className="hs-carousel-slide">
-              <div className="flex justify-center h-full bg-gray-200 p-6">
-                <span className="self-center text-4xl transition duration-700">
-                  Second slide
-                </span>
-              </div>
-            </div>
-            <div className="hs-carousel-slide">
-              <div className="flex justify-center h-full bg-gray-300 p-6">
-                <span className="self-center text-4xl transition duration-700">
-                  Third slide
-                </span>
-              </div>
-            </div>
+    <Carousel
+    responsive={responsive}
+    ssr
+    infinite={false}
+    beforeChange={() => setIsMoving(true)}
+    afterChange={() => setIsMoving(false)}
+    containerClass="carousel-container"
+    itemClass="carousel-item"
+    >
+      {cardData.map(card => (
+        <div key={card.id} className="max-w-xs bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+          <img className="w-full h-60 object-cover object-center" src={card.imageUrl} alt={card.title} />
+          <div className="p-5">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">{card.title}</h2>
+            <p className="text-gray-600 mb-2">{card.price}</p>
+            <p className="text-gray-600 mb-4">{card.location}</p>
+            <Link to={`/venues/1212`} className="px-3 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition duration-300">Book now</Link>
           </div>
         </div>
-        <div className="hs-carousel-pagination flex justify-center absolute bottom-3 start-0 end-0 space-x-2">
-          <span className="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer" />
-          <span className="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer" />
-          <span className="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer" />
-        </div>
-      </div>
-      {/* End Slider */}
-    </>
+      ))}
+    </Carousel>
   );
-}
+};
+
+export default Index;

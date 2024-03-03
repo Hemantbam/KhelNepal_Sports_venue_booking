@@ -1,129 +1,174 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { jwtDecode } from 'jwt-decode';
+const Sidebar = ({ isOpen, onMenuClick }) => {
+  const [Basic, setBasic] = useState();
+  const [Admin, setAdmin] = useState();
+  const handleLogout = () => {
+    // Remove token from local storage
+    localStorage.removeItem("token");
+    window.location.href = '/';
+    // Navigate to the login page or perform any other logout action
+    // You might need to implement routing or other logic here
+  };
 
-const Sidebar = ({ onMenuClick }) => {
-  console.log(typeof onMenuClick);
+  const sidebarClassName = isOpen ? "block" : "hidden";
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const decodedToken = jwtDecode(token);
+    if (decodedToken.role == 'basic') {
+      setBasic(true);
+    }
+    if (decodedToken.role == 'admin') {
+      setAdmin(true);
+    }
+  }, []);
   return (
     <aside
       id="sidebar"
-      className="fixed  z-20 h-full top-0 left-0 pt-16 flex lg:flex flex-shrink-0 flex-col w-64 transition-width duration-75"
+      className={`fixed z-20 h-full top-0 left-0 pt-16 flex lg:flex flex-shrink-0 flex-col w-64 transition-width duration-75 ${sidebarClassName}`}
       aria-label="Sidebar"
     >
       <div className="relative flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white pt-0">
         <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-          <div className="flex-1 px-3 bg-white divide-y space-y-1">
-            <ul className="space-y-2 pb-2">
+          <div className="flex-1 px-3 bg-white divide-y justify-between space-y-1 flex flex-col">
+            <ul className="space-y-2 pb-2 ">
               {/* Dashboard */}
               <li className="cursor-pointer">
                 <span
-                  onClick={() => onMenuClick("dashboard")} // Call the onMenuClick function with the menu item
-                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group "
+                  onClick={() => onMenuClick("dashboard")}
+                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500 group-hover:text-gray-900 transition duration-75"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className="w-6 h-6 mr-3 text-gray-500 group-hover:text-gray-900 transition duration-75"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5c0-1.1.9-2 2-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"
+                    />
                   </svg>
-                  <span className="ml-3">Dashboard</span>
+
+                  Dashboard
                 </span>
               </li>
 
               {/* Edit Profile */}
               <li className="cursor-pointer">
                 <span
-                  onClick={() => onMenuClick("editProfile")} // Call the onMenuClick function with the menu item
-                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group "
+                  onClick={() => onMenuClick("editProfile")}
+                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className="w-6 h-6 mr-3 text-gray-500 group-hover:text-gray-900 transition duration-75"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      fill-rule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    ></path>
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 14a7 7 0 01-7 7"
+                    />
                   </svg>
-                  <span className="ml-3 flex-1 whitespace-nowrap">
-                    Edit Profile
-                  </span>
+
+                  Edit Profile
                 </span>
               </li>
+              {Basic ? <li className="cursor-pointer">
+                <span
+                  onClick={() => onMenuClick("join")}
+                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 3v4.586c0 .346-.08.687-.232 1H19M16.414 19l-2.293-2.293a2 2 0 0 0-2.828 0l-7 7" />
+                    <path d="M18 10l3-3-3-3" />
+                    <path d="M18 10l3 3-3 3" />
+                  </svg>
 
-              {/* Add Venue */}
-              <li className="cursor-pointer">
+
+                  Join
+                </span>
+              </li> : <></>}
+
+              {!Basic ? <li className="cursor-pointer">
                 <span
                   onClick={() => onMenuClick("addVenue")}
-                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group "
+                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className="w-6 h-6 mr-3 text-gray-500 group-hover:text-gray-900 transition duration-75"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      fill-rule="evenodd"
-                      d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
-                      clip-rule="evenodd"
-                    ></path>
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
                   </svg>
-                  <span className="ml-3 flex-1 whitespace-nowrap">
-                    Add Venue
-                  </span>
-                </span>
-              </li>
+                  Add Venue
+                </span></li> : <></>}
+           
+             
+            </ul>
+            {/* Add Venue */}
+            <ul className="space-y-2 pb-2 ">
+
 
               {/* Log Out */}
-              <li className="cursor-pointer">
+              <li className="cursor-pointer ">
                 <span
-                  href="#"
-                  className="text-base text-orange-600 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group "
+                  onClick={() => {
+                    onMenuClick("logout");
+                    handleLogout();
+                  }}
+                  className="text-base text-orange-600 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
                 >
                   <svg
-                    className="w-6 h-6 text-orange-600 flex-shrink-0 group-hover:text-orange-700 transition duration-75"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className="w-6 h-6 mr-3 text-orange-600 group-hover:text-orange-700 transition duration-75"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      fill-rule="evenodd"
-                      d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z"
-                      clip-rule="evenodd"
-                    ></path>
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5zm4 12h6m-3-3v6"
+                    />
                   </svg>
-                  <span className="ml-3 flex-1 whitespace-nowrap">Log Out</span>
+
+                  Log Out
                 </span>
               </li>
-
-              {/* Sign Up */}
-              {/* <li>
-                <a
-                  href="#"
-                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group "
-                >
-                  <svg
-                    className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                  <span className="ml-3 flex-1 whitespace-nowrap">Sign Up</span>
-                </a>
-              </li> */}
             </ul>
-
-            {/* Additional Links */}
           </div>
         </div>
       </div>

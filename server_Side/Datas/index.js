@@ -1,12 +1,12 @@
-const API = 'mongodb://localhost:27017/';//Front End Address
+const API = 'http://localhost:3000/';//Front End Address
 
 const mailOptions = {
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: "", // Your Email Address Here
-    pass: "" // Your Password Here(App Password)
+    user: "hemantbam133@gmail.com", 
+    pass: "vccm fceh lwnu lyvd"
   },
 };
 

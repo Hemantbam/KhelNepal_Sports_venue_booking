@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Check } from '../assets/Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
+
 import Login from '../assets/components/Login';
 import Register from '../assets/components/Register';
 import ResetPassword from '../assets/components/Reset';
@@ -8,17 +10,25 @@ import Forgot from '../assets/components/Forgot';
 import ContactUs from '../assets/pages/Contactus';
 import About from '../assets/pages/Aboutus'
 import Homepage from '../assets/pages/HomePage';
+import Venue from '../assets/pages/Venues';
+import VenueDetail from '../assets/pages/VenueDetail';
+import DasBoard from '../assets/Dashboard/pages/Dashboard';
 
 const Router = () => {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+};
+
+const AppRoutes = () => {
+  const location = useLocation(); // Using useLocation here
 
   useEffect(() => {
-    if (localStorage.getItem('rememberMe') === 'false') {
-      localStorage.removeItem('rememberMe');
-      localStorage.removeItem('token');
-    }
-
     const token = localStorage.getItem('token');
     if (token) {
+      Check();
       const decodedToken = jwtDecode(token);
       const currentTime = Date.now() / 1000; // Convert seconds to milliseconds
 
@@ -29,27 +39,26 @@ const Router = () => {
         alert('Your session has expired. Please log in again.');
       }
     }
-  }, []);
+  }, [location.pathname]); // Call useEffect whenever location.pathname changes
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/login" element={<Login />} />
+    <Routes>
+      <Route path="/" element={<Homepage />} />
+      <Route path="/login" element={<Login />} />
 
-        {!localStorage.getItem('token') && (
-          <>
-            <Route path="/signup" element={<Register />} />
-            <Route path="/forgotpassword" element={<Forgot />} />
-            <Route path="/reset/:token" element={<ResetPassword />} />
-          </>
-        )}
-        <Route path="/aboutus" element={<About />} />
-      
-        <Route path="/contactus" element={<ContactUs />} />
-       
-      </Routes>
-    </BrowserRouter>
+      {!localStorage.getItem('token') && (
+        <>
+          <Route path="/signup" element={<Register />} />
+          <Route path="/forgotpassword" element={<Forgot />} />
+          <Route path="/reset/:token" element={<ResetPassword />} />
+        </>
+      )}
+      <Route path='/dashboard' element={<DasBoard />} />
+      <Route path="/aboutus" element={<About />} />
+      <Route path="/venues" element={<Venue />} />
+      <Route path="/venues/:id" element={<VenueDetail />} />
+      <Route path="/contactus" element={<ContactUs />} />
+    </Routes>
   );
 };
 

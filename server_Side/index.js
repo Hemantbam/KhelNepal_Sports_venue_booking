@@ -3,8 +3,10 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { adminAuth, userAuth, getUsers } = require("./scheme/auth.js");
+const { venueManagerAuth } = require("./scheme/venuemanager.js");
 const connectDB = require("./Database/database.js");
 const authroute = require("./Route/authroute.js");
+
 const path = require('path');
 
 
@@ -35,10 +37,14 @@ process.on("unhandledRejection", (err) => {
 
 // Routes
 app.get("/adminauth", adminAuth, (req, res) => res.send("Admin Route"));
+app.get("/venueauth", venueManagerAuth, (req, res) => res.send("Venue Manager Route"));
 app.get("/basicauth", userAuth, (req, res) => res.send("User Route"));
+
+//Users
 app.get("/api/allusers", getUsers);
 
 // Serve static files
 app.use('/uploads/profile/', express.static(path.join(__dirname, 'uploads/profile')));
+
 
 

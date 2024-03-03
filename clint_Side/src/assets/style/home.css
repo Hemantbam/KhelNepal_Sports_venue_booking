@@ -6,6 +6,9 @@
   --font-name: "Montserrat", sans-serif;
   --subtitle-font-name: "Island Moments", cursive;
 }
+body {
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
 
 .hero__subtitle img {
   width: 2.3rem;
@@ -164,5 +167,23 @@
   .testimonial__title,
   .experience__content h2 {
     font-size: 1.5rem;
+  }
+}
+@media only screen and (max-width: 768px) {
+  .hs-carousel-slide {
+    /* Adjust slide width for smaller screens */
+    width: 80%;
+  }
+
+  .hs-carousel-pagination {
+    /* Adjust pagination styles for smaller screens */
+    bottom: 10px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .hs-carousel-slide {
+    /* Further adjust slide width for even smaller screens */
+    width: 90%;
   }
 }

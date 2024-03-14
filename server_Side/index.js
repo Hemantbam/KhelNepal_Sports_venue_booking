@@ -6,7 +6,7 @@ const { adminAuth, userAuth, getUsers } = require("./scheme/auth.js");
 const { venueManagerAuth } = require("./scheme/venuemanager.js");
 const connectDB = require("./Database/database.js");
 const authroute = require("./Route/authroute.js");
-
+const venueroute = require("./Route/venueroute.js");
 const path = require('path');
 
 
@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/auth", authroute);
-
+app.use("/api/", venueroute);
 
 // Connecting to the database
 connectDB();
@@ -45,6 +45,7 @@ app.get("/api/allusers", getUsers);
 
 // Serve static files
 app.use('/uploads/profile/', express.static(path.join(__dirname, 'uploads/profile')));
+app.use('/uploads/venues/', express.static(path.join(__dirname, 'uploads/venues')));
 
 
 

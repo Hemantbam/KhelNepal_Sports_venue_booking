@@ -14,13 +14,16 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
   const sidebarClassName = isOpen ? "block" : "hidden";
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.role == 'basic') {
-      setBasic(true);
+    if(token){
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.role == 'basic') {
+        setBasic(true);
+      }
+      if (decodedToken.role == 'admin') {
+        setAdmin(true);
+      }
     }
-    if (decodedToken.role == 'admin') {
-      setAdmin(true);
-    }
+   
   }, []);
   return (
     <aside

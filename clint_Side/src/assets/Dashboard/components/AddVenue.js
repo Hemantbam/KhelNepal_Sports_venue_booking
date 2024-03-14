@@ -1,13 +1,104 @@
-import React from 'react'
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
+import {API} from '../../Data/baseIndex'
+import { jwtDecode } from 'jwt-decode';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 export default function AddVenue() {
+  const [basic, setBasic] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setloading] = useState(false);
+  const [success, setSuccess] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    location: '',
+    pricePerHour: '',
+    description: '',
+    capacity: '',
+    facilities: [],
+    image: null, // New field for image
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const decodedToken = jwtDecode(token);
+    if (decodedToken.role === 'basic') {
+      setBasic(true);
+    }
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (name === 'facilities') {
+      const newValue = value.split(',').map(item => item.trim()); // Split and trim each facility
+      setFormData({ ...formData, [name]: newValue });
+    } else if (type === 'file') {
+      setFormData({ ...formData, [name]: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+  
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setloading(true);
+    try {
+      const formDataWithImage = new FormData();
+      for (const key in formData) {
+        formDataWithImage.append(key, formData[key]);
+      }
+      const response = await axios.post(`${API}api/venues`, formDataWithImage, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setSuccess(response.data.message);
+      setError(null);
+      // Reset form fields
+      setFormData({
+        name: '',
+        location: '',
+        pricePerHour: '',
+        description: '',
+        capacity: '',
+        facilities: [],
+        image: null,
+      });
+      setTimeout(() => {
+        setSuccess(null);
+        setloading(false);
+        setError(null);
+      }, 2000);
+    } catch (error) {
+      console.error('Error adding venue:', error);
+      setError(error.response?.data?.message || 'An error occurred while adding the venue.');
+      setSuccess(null);
+      setTimeout(() => {
+        setSuccess(null);
+        setloading(false);
+        setError(null);
+      }, 2000);
+    }
+  };
+  
+
+  if (basic) {
+    return (
+      <>
+        <div className='p-5'>
+          First join, then you can use this function.
+        </div>
+      </>
+    );
+  }
+ 
+
   return (
-    <div className="form-container min-w-full w-80">
-      <form
-        // onSubmit={handleSubmit(onSubmit)}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-      >
-        <h1 className="text-center font-bold text-2xl"> Add Venue</h1>
+    <div className="form-container bg-gray-50 min-h-screen items-center dark:bg-gray-200 min-w-full w-80 justify-center flex sm:px-2 py-10 ">
+      <form onSubmit={handleSubmit} className="bg-white  w-1/1 rounded md:w1/2 lg:w-1/3 shadow-xl px-8 pt-6 pb-8 mb-4">
+        <h1 className="text-center font-bold text-2xl text-orange-600">Add Venue</h1>
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2" htmlFor="name">
             Name
@@ -16,93 +107,123 @@ export default function AddVenue() {
             className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="name"
             type="text"
-            placeholder="Service Name"
-            // {...register("title")}
+            placeholder="Venue Name"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2" htmlFor="price">
-            Price
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="location">
+            Location
           </label>
           <input
-            className=" appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="price"
-            // {...register("price")}
-            type="number"
-            placeholder="Service Price"
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="location"
+            type="text"
+            required
+            placeholder="Venue Location"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
-          <label
-            className="block text-gray-700 font-bold mb-2"
-            htmlFor="description"
-          >
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="pricePerHour">
+            Price Per Hour
+          </label>
+          <input
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="pricePerHour"
+            type="number"
+            placeholder="Price Per Hour"
+            name="pricePerHour"
+            required
+            value={formData.pricePerHour}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="description">
             Description
           </label>
           <textarea
             className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="description"
-            // {...register("desc")}
-            placeholder="Service Description"
+            placeholder="Venue Description"
+            name="description"
+            required
+            value={formData.description}
+            onChange={handleChange}
           ></textarea>
         </div>
-        {/* {!isLoading && ( */}
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 font-bold mb-2"
-              htmlFor="category"
-            >
-              Category
-            </label>
-            <div className="relative">
-              <select
-                className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-2 px-3 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="category"
-                // {...register("category")}
-              >
-                {/* <option value="">Select a category</option>
-                {!isLoading &&
-                  data?.map((item, index) => (
-                    <option key={index} value={item._id}>
-                      {item.name}
-                    </option>
-                  ))} */}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg
-                  className="fill-current h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9.29289 11.2929C9.68342 11.6834 10.3166 11.6834 10.7071 11.2929L14.7071 7.29289C15.0976 6.90237 15.0976 6.2692 14.7071 5.87868C14.3166 5.48815 13.6834 5.48815 13.2929 5.87868L10 9.17157L6.70711 5.87868C6.31658 5.48815 5.68342 5.48815 5.29289 5.87868C4.90237 6.2692 4.90237 6.90237 5.29289 7.29289L9.29289 11.2929Z"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        {/* )} */}
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="capacity">
+            Capacity
+          </label>
+          <input
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="capacity"
+            type="number"
+            placeholder="Venue Capacity"
+            name="capacity"
+            required
+            value={formData.capacity}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="facilities">
+            Facilities (comma-separated)
+          </label>
+          <input
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="facilities"
+            type="text"
+            placeholder="Facilities"
+            name="facilities"
+            required
+            value={formData.facilities.join(',')}
+            onChange={handleChange}
+          />
+        </div>
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2" htmlFor="image">
             Image
           </label>
           <input
-            // {...register("file")}
-            className=" appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="image"
             type="file"
-            multiple
             accept="image/*"
+            name="image"
+            required
+            onChange={handleChange}
           />
         </div>
+        {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+        {/* Success message */}
+        {success && <div className="text-green-600 text-sm mb-4">{success}</div>}
         <div className="flex items-center justify-center md:justify-end">
-          <button
-            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Add Service
-          </button>
+        <button
+              type="submit"
+              className="w-full relative flex justify-center items-center text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
+              disabled={loading}
+            >
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ClipLoader
+                    color="#fff"
+                    loading={loading}
+                    size={20}
+                  />
+                </div>
+              )}
+              <span style={{ visibility: loading ? 'hidden' : 'visible' }}>
+                Sign in
+              </span>
+            </button>
         </div>
       </form>
     </div>

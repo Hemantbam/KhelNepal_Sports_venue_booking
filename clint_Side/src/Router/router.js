@@ -13,6 +13,7 @@ import Homepage from '../assets/pages/HomePage';
 import Venue from '../assets/pages/Venues';
 import VenueDetail from '../assets/pages/VenueDetail';
 import DasBoard from '../assets/Dashboard/pages/Dashboard';
+import Booking from '../assets/components/Booking';
 
 const Router = () => {
   return (
@@ -57,6 +58,7 @@ const AppRoutes = () => {
       <Route path="/aboutus" element={<About />} />
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetail />} />
+      <Route path="/venues/booking/:id" element={<Booking />} />
       <Route path="/contactus" element={<ContactUs />} />
     </Routes>
   );

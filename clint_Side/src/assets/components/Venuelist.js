@@ -33,11 +33,11 @@ export default function Venuelist({ venues }) {
                 <img className="w-full h-64 sm:h-80 object-cover object-center" src={`${API}${res.image}`} alt='Venue' />
                 <div className="p-5">
                   <User userid={res.managedBy} />
-                  <h2 className="text-lg font-semibold text-gray-800 mb-2">{res.name}</h2>
+                  <h2 className="text-lg font-semibold text-gray-800 mb-2 mt-2">{res.name}</h2>
                   <p className="text-gray-600 mb-2">{res.location}</p>
-                  <p className="text-gray-600 mb-4 font-bold ">Rs.{res.pricePerHour}</p>
+                  <p className="text-orange-600 mb-4 font-bold ">Rs.{res.pricePerHour}</p>
                   <Link to={`/venues/${res._id}`} className="block w-full ">
-                    <button className="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition duration-300">Book now</button>
+                    <button className="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition duration-300">View Details</button>
                   </Link>
                 </div>
               </div>

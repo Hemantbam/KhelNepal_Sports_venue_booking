@@ -86,7 +86,7 @@ const Hero = () => {
         <div className="container mx-auto p-8">
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-orange-600 text-center">Explore</h3>
-            <h2 className="featured__tour-title text-center">Our featured venue</h2>
+            <h2 className="featured__tour-title text-center">Recent Venues</h2>
           </div>
           <ImageSlider />
         </div>

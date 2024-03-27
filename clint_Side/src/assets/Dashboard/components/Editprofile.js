@@ -36,6 +36,7 @@ export default function EditProfile() {
     email: '',
     PAN: '',
     phoneNumber: '',
+    venuereq:false,
     address: {
       street: '',
       city: '',
@@ -291,7 +292,7 @@ export default function EditProfile() {
           {!isBasicUser && (
             <div>
               <label htmlFor="phoneNumber" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-                Phone Number
+                Phone Number(Khalti)
               </label>
               <input
                 type="text"

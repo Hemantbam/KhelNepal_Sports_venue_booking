@@ -49,96 +49,96 @@ const Booking = () => {
         }
     }, [bookingData.startDate, bookingData.endDate]);
 
-    // const handleBooking = async (e) => {
-    //     e.preventDefault();
-    //     // Validate start date and end date
-    //     const now = new Date();
-    //     const startDate = new Date(Date.parse(bookingData.startDate));
-    //     const endDate = new Date(Date.parse(bookingData.endDate));
+    const handleBooking = async (e) => {
+        e.preventDefault();
+        // Validate start date and end date
+        const now = new Date();
+        const startDate = new Date(Date.parse(bookingData.startDate));
+        const endDate = new Date(Date.parse(bookingData.endDate));
 
-    //     // Check if startDate is after now
-    //     if (startDate <= now) {
-    //         setError('Start date should be after the current date and time.');
-    //         return;
-    //     }
+        // Check if startDate is after now
+        if (startDate <= now) {
+            setError('Start date should be after the current date and time.');
+            return;
+        }
 
-    //     // Check if endDate is greater than or equal to startDate
-    //     if (endDate <= startDate) {
-    //         setError('End date should be greater than the start date.');
-    //         return;
-    //     }
+        // Check if endDate is greater than or equal to startDate
+        if (endDate <= startDate) {
+            setError('End date should be greater than the start date.');
+            return;
+        }
 
-    //     // Check if the dates are the same
-    //     const sameDay = startDate.toDateString() === endDate.toDateString();
+        // Check if the dates are the same
+        const sameDay = startDate.toDateString() === endDate.toDateString();
 
-    //     // If the dates are the same, compare the times
-    //     if (sameDay && endDate <= startDate) {
-    //         setError('End time should be greater than the start time.');
-    //         return;
-    //     }
-    //     // Continue with booking process
-    //     try {
-    //         setLoading(true);
-    //         setError(null);
-    //         // Calculate price based on start date and end date (already done in useEffect)
-    //         const price = bookingData.price;
-    //         price.toFixed(2);
-    //         // Get JWT token from local storage or wherever you store it
-    //         const token = localStorage.getItem('token'); // Replace with your token retrieval logic
-    //         // Initialize Khalti checkout
-    //         const config = {
-    //             // Replace the publicKey with yours
-    //             "publicKey": "test_public_key_77a3097db0b14141b4fded4e175211fb",
-    //             "productIdentity": Venue._id,
-    //             "productName": Venue.name,
-    //             "productUrl": window.location.href,
-    //             "paymentPreference": [
-    //                 "KHALTI"
-    //             ],
-    //             "eventHandler": {
-    //                 onSuccess: async (payload) => {
-    //                     // Send booking data and Khalti data to backend
-    //                     try {
-    //                         const response = await axios.post(`${API}api/bookings`, {
-    //                             bookingData: bookingData,
-    //                             token: token,
-    //                             khaltiData: payload
-    //                         });
-    //                         setLoading(false);
-    //                         setSuccess(true);
-    //                         console.log(response.data);
-    //                         // Redirect to venue detail page after 2 seconds
-    //                         setTimeout(() => {
-    //                             history(`/venues/${id}`); // Replace with your venue detail route
-    //                         }, 2000);
-    //                     } catch (error) {
-    //                         setError(error.message || 'An error occurred during payment processing.');
-    //                         setLoading(false);
-    //                         console.error('Error processing payment:', error);
-    //                         // Handle error, e.g., display an error message to the user
-    //                     }
-    //                 },
-    //                 onError: (error) => {
-    //                     setLoading(false)
-    //                     setError("Payment Handeler Error")
-    //                     console.log(error);
-    //                 },
-    //                 onClose: () => {
-    //                     setLoading(false)
-    //                     console.log('widget is closing');
-    //                 }
-    //             }
-    //         };
-    //         const checkout = new KhaltiCheckout(config);
-    //         // Show Khalti checkout modal
-    //         checkout.show({ amount: price }); // Pass calculated price to Khalti
-    //     } catch (error) {
-    //         setError(error.message || 'An error occurred during payment processing.');
-    //         setLoading(false);
-    //         console.error('Error processing payment:', error);
-    //         // Handle error, e.g., display an error message to the user
-    //     }
-    // };
+        // If the dates are the same, compare the times
+        if (sameDay && endDate <= startDate) {
+            setError('End time should be greater than the start time.');
+            return;
+        }
+        // Continue with booking process
+        try {
+            setLoading(true);
+            setError(null);
+            // Calculate price based on start date and end date (already done in useEffect)
+            const price = bookingData.price;
+            price.toFixed(2);
+            // Get JWT token from local storage or wherever you store it
+            const token = localStorage.getItem('token'); // Replace with your token retrieval logic
+            // Initialize Khalti checkout
+            const config = {
+                // Replace the publicKey with yours
+                "publicKey": "test_public_key_77a3097db0b14141b4fded4e175211fb",
+                "productIdentity": Venue._id,
+                "productName": Venue.name,
+                "productUrl": window.location.href,
+                "paymentPreference": [
+                    "KHALTI"
+                ],
+                "eventHandler": {
+                    onSuccess: async (payload) => {
+                        // Send booking data and Khalti data to backend
+                        try {
+                            const response = await axios.post(`${API}api/bookings`, {
+                                bookingData: bookingData,
+                                token: token,
+                                khaltiData: payload
+                            });
+                            setLoading(false);
+                            setSuccess(true);
+                            console.log(response.data);
+                            // Redirect to venue detail page after 2 seconds
+                            setTimeout(() => {
+                                history(`/venues/${id}`); // Replace with your venue detail route
+                            }, 2000);
+                        } catch (error) {
+                            setError(error.message || 'An error occurred during payment processing.');
+                            setLoading(false);
+                            console.error('Error processing payment:', error);
+                            // Handle error, e.g., display an error message to the user
+                        }
+                    },
+                    onError: (error) => {
+                        setLoading(false)
+                        setError("Payment Handeler Error")
+                        console.log(error);
+                    },
+                    onClose: () => {
+                        setLoading(false)
+                        console.log('widget is closing');
+                    }
+                }
+            };
+            const checkout = new KhaltiCheckout(config);
+            // Show Khalti checkout modal
+            checkout.show({ amount: price*100 }); // Pass calculated price to Khalti
+        } catch (error) {
+            setError(error.message || 'An error occurred during payment processing.');
+            setLoading(false);
+            console.error('Error processing payment:', error);
+            // Handle error, e.g., display an error message to the user
+        }
+    };
 
     const calculatePrice = (startDateStr, endDateStr) => {
         const startDate = new Date(startDateStr);
@@ -161,7 +161,7 @@ const Booking = () => {
                         Booking
                     </h1>
                     <div className="mx-auto w-full max-w-[550px] ">
-                        <form >
+                        <form onSubmit={handleBooking} method='POST'>
                             <div className="mb-5">
                                 <label htmlFor="fullName" className="mb-3 block text-base font-medium text-[#07074D]">
                                     Full Name
@@ -265,7 +265,7 @@ const Booking = () => {
                                 <input
                                     type="text"
                                     id="price"
-                                    value={bookingData.price/100}
+                                    value={bookingData.price}
                                     readOnly
                                     className="w-full rounded-md border text-red-500 border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium outline-none"
                                 />

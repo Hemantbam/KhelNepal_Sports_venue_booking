@@ -7,6 +7,8 @@ const { venueManagerAuth } = require("./scheme/venuemanager.js");
 const connectDB = require("./Database/database.js");
 const authroute = require("./Route/authroute.js");
 const venueroute = require("./Route/venueroute.js");
+const bookingroute = require("./Route/bookingroute.js");
+const paymentroute = require("./Route/paymentroute.js");
 const path = require('path');
 
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/api/auth", authroute);
 app.use("/api/", venueroute);
+app.use("/api/", bookingroute);
+app.use('/api', paymentroute);
 
 // Connecting to the database
 connectDB();

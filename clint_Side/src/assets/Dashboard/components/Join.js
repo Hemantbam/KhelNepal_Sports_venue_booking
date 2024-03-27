@@ -27,6 +27,7 @@ export default function Join() {
     role: '',
   });
 
+
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isBasicUser, setIsBasicUser] = useState(false); // Track if the user is a basic user
@@ -34,7 +35,9 @@ export default function Join() {
   const [alreadyJoined, setAlreadyJoined] = useState(false);
 
   useEffect(() => {
+
     try {
+      
       const token = localStorage.getItem('token');
       const decodedToken = jwtDecode(token);
 
@@ -113,6 +116,7 @@ export default function Join() {
       const formData = new FormData();
 
       // Append user data to the formData object
+      formData.append("venuereq",true)
       for (const key in user) {
         if (user.hasOwnProperty(key)) {
           if (key === 'profilePicture' && user[key] !== null) {
@@ -124,7 +128,9 @@ export default function Join() {
               }
             }
           } else {
-            formData.append(key, user[key]);
+          
+              formData.append(key, user[key]);
+            
           }
         }
       }
@@ -168,6 +174,7 @@ export default function Join() {
            Join Now
         </h1>
         <form className="space-y-6" onSubmit={handleSubmit}>
+          <small>Every purchase or complete booking we take 5% of  your payment as a service fee.</small><br/>
                  {/* Profile Picture */}
 
                  <div>
@@ -263,7 +270,7 @@ export default function Join() {
           {isBasicUser && (
             <div>
               <label htmlFor="phoneNumber" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-                Phone Number
+                Phone Number(Khalti)
               </label>
               <input
                 type="text"
@@ -391,6 +398,7 @@ export default function Join() {
               />
             </div>
           )}
+  
           
           {/* Error message */}
           {error && (

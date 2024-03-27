@@ -7,6 +7,7 @@ import EditProfile from "../components/Editprofile";
 import AddVenue from "../components/AddVenue";
 import Join from "../components/Join";
 import { Check } from "../../Data/baseIndex";
+import VenueList from "../components/Venuelist";
 
 
 export default function DasBoard() {
@@ -39,6 +40,9 @@ export default function DasBoard() {
       case 'join':
         setContent(<Join />)
         break;
+        case 'venues':
+          setContent(<VenueList/>)
+          break;
       default:
         break;
     }

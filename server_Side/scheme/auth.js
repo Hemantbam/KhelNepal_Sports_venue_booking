@@ -118,12 +118,12 @@ exports.update = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({ message: 'Invalid token' });
   }
-var id;
+  var id;
   const { username, email, role } = decodedToken;
-  if(role=='admin'){
-   id=req.body.id;
-  }else{
-    id=decodedToken.id;
+  if (role == 'admin') {
+    id = req.body.id;
+  } else {
+    id = decodedToken.id;
   }
 
   if (!id || !role || !username || !email) {
@@ -197,9 +197,9 @@ function updateAdminProfile(req, userToUpdate) {
 }
 
 // Function to update user profile for non-admin users
-function updateNonAdminProfile(req, userToUpdate, role) {
-  const { username, email, fullName, PAN, phoneNumber, ...otherFields } = req.body;
-
+function updateNonAdminProfile(req, userToUpdate, roleE) {
+  const { username, email, fullName, PAN, phoneNumber,venuereq,role, ...otherFields } = req.body;
+console.log(req);
   // Update basic profile information
   userToUpdate.username = username || userToUpdate.username;
   userToUpdate.fullName = fullName || userToUpdate.fullName;
@@ -221,9 +221,13 @@ function updateNonAdminProfile(req, userToUpdate, role) {
   // Update profile picture if provided
   userToUpdate.profilePicture = req.file ? `uploads/profile/${req.file.filename}` : userToUpdate.profilePicture;
 
-  // Update role if necessary
-  if (role === 'basic' && userToUpdate.phoneNumber !== null) {
-    userToUpdate.role = 'venue';
+
+  if (roleE === 'basic' ) {
+    userToUpdate.venuereq = venuereq || userToUpdate.venuereq ;
+  }
+  if (roleE === 'admin' ) {
+    userToUpdate.venuereq = false;
+    userToUpdate.role= role||userToUpdate.role;
   }
 }
 
@@ -310,7 +314,7 @@ exports.userAuth = (req, res, next) => {
               return res.status(404).json({ message: "User not found" });
             }
             // Attach user profile data to the response object
-            res.locals.userData = {id:user.id, username: user.username, email: user.email, profile: user.profilePicture };
+            res.locals.userData = { id: user.id, username: user.username, email: user.email, profile: user.profilePicture };
             res.json({ message: "Authorized", user: res.locals.userData }); // Include user object in the response
           } catch (error) {
             return res.status(500).json({ message: "Internal server error" });
@@ -387,7 +391,7 @@ exports.resetPassword = async (req, res, next) => {
 
     console.log('User found. Hashing new password...');
 
-    const hashedPassword = await bcrypt.hash(newPassword,10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     console.log('Updating user password...');
 
@@ -409,13 +413,17 @@ exports.resetPassword = async (req, res, next) => {
 exports.getUsers = async (req, res, next) => {
   try {
     // Check if ID is provided in query params
-    const { id } = req.query;
+    const { id,venuereq } = req.query;
 
     let users;
     if (id) {
       // If ID is provided, find user by ID
       users = await User.findById(id, 'username fullName profilePicture email role');
-    } else {
+    }else if (venuereq) {
+      users = await User.findById(venuereq, 'username fullName profilePicture email role');
+
+    }
+    else {
       // If no ID provided, retrieve all users with necessary fields
       users = await User.find({}, 'username fullName profilePicture email role');
     }

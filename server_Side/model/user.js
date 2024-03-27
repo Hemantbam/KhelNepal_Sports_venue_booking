@@ -27,7 +27,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
- 
+  venuereq: {
+    type: Boolean,
+    enum: [true, false],
+    default: false,
+  },
+
   address: {
     street: {
       type: String,
@@ -73,7 +78,15 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'basic', 'venue'],
     default: 'basic',
   },
-  resetToken: String, // Add resetToken field for password reset
+  resetToken: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  },
 });
 
 const User = mongoose.model('User', userSchema);

@@ -28,7 +28,7 @@ function createBooking(req, res) {
 
     // Verify the payment with Khalti's API and create the booking
     let config = {
-        headers: {'Authorization': 'Key test_secret_key_3c2de90c5c3142718f6252f1b4099a62'}
+        headers: {'Authorization': 'Key test_secret_key_9571ebc81db14cb4be5154e43371036a'}
     };
 
     axios.post("https://khalti.com/api/v2/payment/verify/", khaltiData, config)

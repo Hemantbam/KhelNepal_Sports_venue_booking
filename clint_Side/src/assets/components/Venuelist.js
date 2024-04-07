@@ -34,7 +34,8 @@ export default function Venuelist({ venues }) {
                 <div className="p-5">
                   <User userid={res.managedBy} />
                   <h2 className="text-lg font-semibold text-gray-800 mb-2 mt-2">{res.name}</h2>
-                  <p className="text-gray-600 mb-2">{res.location}</p>
+                  <p className="text-gray-600 mb-4"><svg xmlns="http://www.w3.org/2000/svg" className='w-5 h-5 inline-block mr-3' viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>{res.location} </p>
+
                   <p className="text-orange-600 mb-4 font-bold ">Rs.{res.pricePerHour}</p>
                   <Link to={`/venues/${res._id}`} className="block w-full ">
                     <button className="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition duration-300">View Details</button>

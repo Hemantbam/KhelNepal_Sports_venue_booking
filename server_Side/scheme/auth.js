@@ -1,7 +1,17 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const User = require("../model/user"); // Import User model if not already imported
+const User = require("../model/user"); 
+const Payment = require("../model/payment");
+const Booking=require("../model/booking");
+const nodemailer = require("nodemailer");
+const { v4: uuidv4 } = require('uuid');
+const { API, mailOptions, jwtSecret } = require("../Datas");
+
+
+// Create a transporter for sending emails
+const transporter = nodemailer.createTransport(mailOptions);
+
 exports.register = async (req, res, next) => {
   const { username, email, password } = req.body;
 
@@ -198,8 +208,8 @@ function updateAdminProfile(req, userToUpdate) {
 
 // Function to update user profile for non-admin users
 function updateNonAdminProfile(req, userToUpdate, roleE) {
-  const { username, email, fullName, PAN, phoneNumber,venuereq,role, ...otherFields } = req.body;
-console.log(req);
+  const { username, email, fullName, PAN, phoneNumber, venuereq, role, ...otherFields } = req.body;
+  console.log(req);
   // Update basic profile information
   userToUpdate.username = username || userToUpdate.username;
   userToUpdate.fullName = fullName || userToUpdate.fullName;
@@ -222,17 +232,16 @@ console.log(req);
   userToUpdate.profilePicture = req.file ? `uploads/profile/${req.file.filename}` : userToUpdate.profilePicture;
 
 
-  if (roleE === 'basic' ) {
-    userToUpdate.venuereq = venuereq || userToUpdate.venuereq ;
+  if (roleE === 'basic') {
+    userToUpdate.venuereq = venuereq || userToUpdate.venuereq;
   }
-  if (roleE === 'admin' ) {
+  if (roleE === 'admin') {
     userToUpdate.venuereq = false;
-    userToUpdate.role= role||userToUpdate.role;
+    userToUpdate.role = role || userToUpdate.role;
   }
 }
 
-
-exports.deleteUser = async (req, res, next) => {
+exports.deleteUser = async (req, res) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -243,7 +252,7 @@ exports.deleteUser = async (req, res, next) => {
 
   try {
     const decodedToken = jwt.verify(token, jwtSecret);
-
+    console.log("decoded", decodedToken);
     if (decodedToken.role !== 'admin') {
       return res.status(403).json({ message: 'Only admin can delete users' });
     }
@@ -260,13 +269,28 @@ exports.deleteUser = async (req, res, next) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await user.remove();
+    // Find related bookings using managedBy field
+    const bookings = await Booking.find({ managedBy: id });
+    console.log(bookings);
+    // Find related payments using bookings
+    for (const booking of bookings) {
+      await Payment.deleteMany({ bookingid: booking._id });
+    }
+
+    // Delete the bookings related to the user
+    await Booking.deleteMany({ managedBy: id });
+
+    // Delete the user
+    await user.deleteOne();
 
     return res.status(200).json({ message: 'User successfully deleted', user });
   } catch (error) {
+    console.error(error);
     return res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+
 exports.adminAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -328,13 +352,6 @@ exports.userAuth = (req, res, next) => {
 };
 
 
-// In auth.js controller
-const nodemailer = require("nodemailer");
-const { v4: uuidv4 } = require('uuid');
-const { API, mailOptions, jwtSecret } = require("../Datas");
-
-// Create a transporter for sending emails
-const transporter = nodemailer.createTransport(mailOptions);
 
 exports.forgotPassword = async (req, res, next) => {
   const { email } = req.body;
@@ -413,13 +430,13 @@ exports.resetPassword = async (req, res, next) => {
 exports.getUsers = async (req, res, next) => {
   try {
     // Check if ID is provided in query params
-    const { id,venuereq } = req.query;
+    const { id, venuereq } = req.query;
 
     let users;
     if (id) {
       // If ID is provided, find user by ID
       users = await User.findById(id, 'username fullName profilePicture email role');
-    }else if (venuereq) {
+    } else if (venuereq) {
       users = await User.findById(venuereq, 'username fullName profilePicture email role');
 
     }

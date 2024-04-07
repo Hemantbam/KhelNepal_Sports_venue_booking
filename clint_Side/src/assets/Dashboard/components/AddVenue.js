@@ -1,6 +1,6 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {API} from '../../Data/baseIndex'
+import { API } from '../../Data/baseIndex'
 import { jwtDecode } from 'jwt-decode';
 import ClipLoader from 'react-spinners/ClipLoader';
 
@@ -34,11 +34,12 @@ export default function AddVenue() {
       setFormData({ ...formData, [name]: newValue });
     } else if (type === 'file') {
       setFormData({ ...formData, [name]: files[0] });
+     
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,6 +71,7 @@ export default function AddVenue() {
         setSuccess(null);
         setloading(false);
         setError(null);
+        window.location.pathname='/dashboard'
       }, 2000);
     } catch (error) {
       console.error('Error adding venue:', error);
@@ -82,7 +84,7 @@ export default function AddVenue() {
       }, 2000);
     }
   };
-  
+
 
   if (basic) {
     return (
@@ -93,7 +95,7 @@ export default function AddVenue() {
       </>
     );
   }
- 
+
 
   return (
     <div className="form-container bg-gray-50 min-h-screen items-center dark:bg-gray-200 min-w-full w-80 justify-center flex sm:px-2 py-10 ">
@@ -199,31 +201,33 @@ export default function AddVenue() {
             accept="image/*"
             name="image"
             required
+            value={FormData.image}
             onChange={handleChange}
+       
           />
         </div>
         {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
         {/* Success message */}
         {success && <div className="text-green-600 text-sm mb-4">{success}</div>}
         <div className="flex items-center justify-center md:justify-end">
-        <button
-              type="submit"
-              className="w-full relative flex justify-center items-center text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
-              disabled={loading}
-            >
-              {loading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ClipLoader
-                    color="#fff"
-                    loading={loading}
-                    size={20}
-                  />
-                </div>
-              )}
-              <span style={{ visibility: loading ? 'hidden' : 'visible' }}>
-                Sign in
-              </span>
-            </button>
+          <button
+            type="submit"
+            className="w-full relative flex justify-center items-center text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
+            disabled={loading}
+          >
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ClipLoader
+                  color="#fff"
+                  loading={loading}
+                  size={20}
+                />
+              </div>
+            )}
+            <span style={{ visibility: loading ? 'hidden' : 'visible' }}>
+              Sign in
+            </span>
+          </button>
         </div>
       </form>
     </div>

@@ -1,8 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { API } from "../Data/baseIndex";
 
 export default function ContactUs() {
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "email") setEmail(value);
+    if (name === "subject") setSubject(value);
+    if (name === "message") setMessage(value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}api/contact`, {
+        email,
+        subject,
+        message,
+      });
+      if (response.status === 200) {
+        setSuccessMessage("Message sent successfully!");
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 1000);
+        setErrorMessage("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+      }
+    } catch (error) {
+      setErrorMessage(
+        "An error occurred while sending the message. Please try again later."
+      );
+      setTimeout(() => {
+        setErrorMessage(
+          ""
+        );
+      }, 1000);
+      setSuccessMessage("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -16,7 +66,8 @@ export default function ContactUs() {
               Got a technical issue? Want to send feedback about our feature?
               Need details about our Business plan? Let us know.
             </p>
-            <form action="#" className="space-y-8">
+
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div>
                 <label
                   htmlFor="email"
@@ -27,9 +78,12 @@ export default function ContactUs() {
                 <input
                   type="email"
                   id="email"
+                  name="email"
+                  value={email}
+                  onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="name@email.com"
-                  required=""
+                  required
                 />
               </div>
               <div>
@@ -42,9 +96,13 @@ export default function ContactUs() {
                 <input
                   type="text"
                   id="subject"
+                  name="subject"
+                  value={subject}
+
+                  onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Let us know how we can help you"
-                  required=""
+                  required
                 />
               </div>
               <div className="sm:col-span-2">
@@ -56,18 +114,32 @@ export default function ContactUs() {
                 </label>
                 <textarea
                   id="message"
+                  name="message"
+                  required
+                  value={message}
+                  onChange={handleInputChange}
                   rows={6}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Leave a comment..."
                   defaultValue={""}
                 />
               </div>
-              <button
-                type="submit"
-                className="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-orange-700 sm:w-fit hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-primary-800"
-              >
-                Send message
-              </button>
+              {errorMessage && (
+                <p className="text-red-500">{errorMessage}</p>
+              )}
+              {successMessage && (
+                <p className="text-green-500">{successMessage}</p>
+              )}
+              <div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-orange-700 sm:w-fit hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-primary-800 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                >
+                  {loading ? "Sending..." : "Send message"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

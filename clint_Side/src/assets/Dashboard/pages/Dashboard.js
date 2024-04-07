@@ -8,6 +8,7 @@ import AddVenue from "../components/AddVenue";
 import Join from "../components/Join";
 import { Check } from "../../Data/baseIndex";
 import VenueList from "../components/Venuelist";
+import UsersEdit from "../components/Usersedit";
 
 
 export default function DasBoard() {
@@ -15,16 +16,16 @@ export default function DasBoard() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const history = useNavigate(); // Access the history object for navigation
   useEffect(() => {
-  
+    Check();
     // Check if token exists in local storage
     const token = localStorage.getItem("token");
     if (!token) {
       // Navigate to login page if token is not found
       history("/login");
-     
+
     }
   }, []);
-  Check();
+
   const handleMenuClick = (menuItem) => {
 
     switch (menuItem) {
@@ -40,9 +41,12 @@ export default function DasBoard() {
       case 'join':
         setContent(<Join />)
         break;
-        case 'venues':
-          setContent(<VenueList/>)
-          break;
+      case 'venues':
+        setContent(<VenueList />)
+        break;
+      case 'userlist':
+        setContent(<UsersEdit />)
+        break;
       default:
         break;
     }

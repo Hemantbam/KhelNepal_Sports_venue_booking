@@ -10,7 +10,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.put('/update', upload.single('profilePicture'), update);
 
-router.delete("/deleteUser", adminAuth, deleteUser);
+router.delete("/deleteUser",  deleteUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 

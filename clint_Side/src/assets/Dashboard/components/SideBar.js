@@ -163,10 +163,36 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                   Venue List
                 </span>
               </li> : <></>}
-           
+              {!Basic &&Admin? <li className="cursor-pointer">
+                <span
+                  onClick={() => onMenuClick("userlist")}
+                  className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    className="mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 3v4.586c0 .346-.08.687-.232 1H19M16.414 19l-2.293-2.293a2 2 0 0 0-2.828 0l-7 7" />
+                    <path d="M18 10l3-3-3-3" />
+                    <path d="M18 10l3 3-3 3" />
+                  </svg>
+
+
+                  Users List
+                </span>
+              </li> : <></>}
              
             </ul>
-            {/* Add Venue */}
+         
+            
             <ul className="space-y-2 pb-2 ">
 
 

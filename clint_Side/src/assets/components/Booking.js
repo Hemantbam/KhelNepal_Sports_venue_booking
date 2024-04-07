@@ -88,7 +88,7 @@ const Booking = () => {
             // Initialize Khalti checkout
             const config = {
                 // Replace the publicKey with yours
-                "publicKey": "test_public_key_77a3097db0b14141b4fded4e175211fb",
+                "publicKey": "test_public_key_fb7335816eb647d4a748906c9c993d82",
                 "productIdentity": Venue._id,
                 "productName": Venue.name,
                 "productUrl": window.location.href,

@@ -9,6 +9,9 @@ import Join from "../components/Join";
 import { Check } from "../../Data/baseIndex";
 import VenueList from "../components/Venuelist";
 import UsersEdit from "../components/Usersedit";
+import ContactList from "../components/Contactuslist";
+import SubscriberList from "../components/Subscriberlist";
+import JoinRequest from "../components/JoinRequest";
 
 
 export default function DasBoard() {
@@ -46,6 +49,15 @@ export default function DasBoard() {
         break;
       case 'userlist':
         setContent(<UsersEdit />)
+        break;
+      case 'contactlist':
+        setContent(<ContactList />)
+        break;
+      case 'subscriberlist':
+        setContent(<SubscriberList />)
+        break;
+      case 'venuereqlist':
+        setContent(<JoinRequest />);
         break;
       default:
         break;

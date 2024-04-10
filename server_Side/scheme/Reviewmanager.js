@@ -5,14 +5,22 @@ const { jwtSecret } = require('../Datas');
 // Function to retrieve all reviews
 async function getReviews(req, res) {
     try {
-        const reviews = await Review.find();
+        const { venueid } = req.query;
+        // Assuming `Review` is your Mongoose model
+        let reviews;
+        if (venueid) {
+            reviews = await Review.find({ venueid: venueid });
+        } else {
+            reviews = await Review.find();
+        }
         return res.status(200).json({ reviews });
     } catch (error) {
         return res.status(500).json({ message: `Error retrieving reviews: ${error.message}` });
     }
 }
 
-// Function to create a review
+
+
 async function createReview(req, res) {
     try {
         const authHeader = req.headers.authorization;
@@ -28,11 +36,16 @@ async function createReview(req, res) {
         }
 
         const { venueId, comment, rating, userId } = req.body;
-        const isAdmin = decodedToken.role === 'admin';
+        console.log(req.body);
+        const isAdmin = decodedToken.role == 'admin';
 
         // Check if user is admin and userId is provided
         if (isAdmin && userId) {
-            // Create a new review on behalf of provided user
+            // Create a new review on behalf of the provided user
+            const existingReview = await Review.findOne({ venueid: venueId, userid: userId });
+            if (existingReview) {
+                return res.status(400).json({ message: 'Review already given by this user for this venue' });
+            }
             const newReview = new Review({
                 venueid: venueId,
                 userid: userId,
@@ -42,7 +55,12 @@ async function createReview(req, res) {
             await newReview.save();
         } else {
             // If not an admin, use the userId from token
-            const userIdFromToken = decodedToken.userId;
+            const userIdFromToken = decodedToken.id;
+            console.log(userIdFromToken);
+            const existingReview = await Review.findOne({ venueid: venueId, userid: userIdFromToken });
+            if (existingReview) {
+                return res.status(400).json({ message: 'Review already given by this user for this venue' });
+            }
             const newReview = new Review({
                 venueid: venueId,
                 userid: userIdFromToken,

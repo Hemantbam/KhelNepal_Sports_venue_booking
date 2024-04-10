@@ -60,7 +60,7 @@ exports.getVenues = async (req, res, next) => {
 
 exports.addVenue = async (req, res, next) => {
     // Extract venue data from request body
-    const { name, location, capacity, description, pricePerHour, facilities } = req.body;
+    const { name,userid, location, capacity, description, pricePerHour, facilities } = req.body;
 
     // Extract the token from the request headers
     const token = req.headers.authorization.split(' ')[1];
@@ -85,7 +85,7 @@ exports.addVenue = async (req, res, next) => {
             pricePerHour,
             facilities,
             image: `uploads/venues/${req.file.filename}`,
-            managedBy: userId // Assign the user ID to the managedBy field
+            managedBy: userid // Assign the user ID to the managedBy field
         });
 
         // Save the new venue to the database

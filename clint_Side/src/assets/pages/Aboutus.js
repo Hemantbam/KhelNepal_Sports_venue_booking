@@ -1,16 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-const stats = [
-  { id: 1, name: "Total Customers", value: "2000+" },
-  { id: 2, name: "Total Venue", value: "100+" },
-  { id: 3, name: "Total Services", value: "200+" },
-];
+import { API } from "../Data/baseIndex";
 
 const About = () => {
+  const [stats, setStats] = useState([
+    { id: 1, name: "Total Customers", value: "Calculating..." },
+    { id: 2, name: "Total Venue", value: "Calculating..." },
+    { id: 3, name: "Total Services", value: "Calculating..." },
+  ]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersResponse = await axios.get(`${API}api/allusers`);
+        const bookingsResponse = await axios.get(`${API}api/bookings`);
+        const venuesResponse = await axios.get(`${API}api/venues`);
+
+        const totalUsers = usersResponse.data.users.length;
+        const totalBookings = bookingsResponse.data.length;
+        const totalVenues = venuesResponse.data.venues.length;
+
+        setStats([
+          { id: 1, name: "Total Customers", value: totalUsers.toString() },
+          { id: 2, name: "Total Venue", value: totalVenues.toString() },
+          { id: 3, name: "Total Bookings", value: totalBookings.toString() },
+        ]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // You can handle errors here
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
-    <Navbar />
+      <Navbar />
       <div className="flex flex-col items-center justify-center py-12 px-6 bg-gray-100 pt-10">
         <h2 className="text-4xl text-gray-800 font-extrabold mb-4 py-16">
           About Us
@@ -18,10 +46,10 @@ const About = () => {
         <div className="flex flex-col md:flex-row items-center justify-center">
           <div className="md:w-1/2 max-w-2xl text-center md:text-left mb-8">
             <p className="text-lg text-gray-700">
-              Welcome to {" "}
+              Welcome to{" "}
               <span className="font-bold text-xl text-orange-600">
                 KhealNepal
-              </span>{" "}
+              </span>
               ,where your passion for sports meets seamless convenience. We are
               not just a booking website.we're the bridge between enthusiasts
               and the perfect venue for your games, events, and celebrations.

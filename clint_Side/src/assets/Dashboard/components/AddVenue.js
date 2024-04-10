@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API } from '../../Data/baseIndex'
+import { API } from '../../Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 export default function AddVenue() {
+  const [UserId, setUserId] = useState("");
+  const [usernames, setUsernames] = useState([]);
   const [basic, setBasic] = useState(false);
   const [error, setError] = useState(null);
-  const [loading, setloading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -16,7 +18,7 @@ export default function AddVenue() {
     description: '',
     capacity: '',
     facilities: [],
-    image: null, // New field for image
+    image: null,
   });
 
   useEffect(() => {
@@ -25,30 +27,42 @@ export default function AddVenue() {
     if (decodedToken.role === 'basic') {
       setBasic(true);
     }
+    fetchUsernames(); // Fetch usernames when the component mounts
   }, []);
+
+  const fetchUsernames = async () => {
+    try {
+      const response = await axios.get(`${API}api/allusers`);
+      setUsernames(response.data.users);
+    } catch (error) {
+      console.error('Error fetching usernames:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (name === 'facilities') {
-      const newValue = value.split(',').map(item => item.trim()); // Split and trim each facility
+      const newValue = value.split(',').map(item => item.trim());
       setFormData({ ...formData, [name]: newValue });
     } else if (type === 'file') {
       setFormData({ ...formData, [name]: files[0] });
-     
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setloading(true);
+    setLoading(true);
     try {
       const formDataWithImage = new FormData();
+      // Append form data
       for (const key in formData) {
         formDataWithImage.append(key, formData[key]);
       }
+      // Append userid to form data
+      formDataWithImage.append('userid', jwtDecode(localStorage.getItem('token')).role === 'admin' ? UserId : jwtDecode(localStorage.getItem('userid')).id);
+
       const response = await axios.post(`${API}api/venues`, formDataWithImage, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -57,7 +71,7 @@ export default function AddVenue() {
       });
       setSuccess(response.data.message);
       setError(null);
-      // Reset form fields
+      // Reset form data except userid
       setFormData({
         name: '',
         location: '',
@@ -69,9 +83,9 @@ export default function AddVenue() {
       });
       setTimeout(() => {
         setSuccess(null);
-        setloading(false);
+        setLoading(false);
         setError(null);
-        window.location.pathname='/dashboard'
+        window.location.pathname = '/dashboard';
       }, 2000);
     } catch (error) {
       console.error('Error adding venue:', error);
@@ -79,7 +93,7 @@ export default function AddVenue() {
       setSuccess(null);
       setTimeout(() => {
         setSuccess(null);
-        setloading(false);
+        setLoading(false);
         setError(null);
       }, 2000);
     }
@@ -96,12 +110,36 @@ export default function AddVenue() {
     );
   }
 
-
   return (
     <div className="form-container bg-gray-50 min-h-screen items-center dark:bg-gray-200 min-w-full w-80 justify-center flex sm:px-2 py-10 ">
       <form onSubmit={handleSubmit} className="bg-white  w-1/1 rounded md:w1/2 lg:w-1/3 shadow-xl px-8 pt-6 pb-8 mb-4">
         <h1 className="text-center font-bold text-2xl text-orange-600">Add Venue</h1>
         <div className="mb-4">
+          <label className="block text-gray-700 font-bold mb-2" htmlFor="usernames">
+            Select User
+          </label>
+          <select
+            className="border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="usernames"
+            name="usernames"
+            onChange={(e) => {
+              setUserId(e.target.value);
+            }}
+          >
+            <option value="">Select a user</option>
+            {usernames.map((user) => {
+              console.log(user);
+              return (
+                <option key={user._id} value={user._id}>
+                  {user.username}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        <div className="mb-4">
+
           <label className="block text-gray-700 font-bold mb-2" htmlFor="name">
             Name
           </label>
@@ -203,7 +241,7 @@ export default function AddVenue() {
             required
             value={FormData.image}
             onChange={handleChange}
-       
+
           />
         </div>
         {error && <div className="text-red-600 text-sm mb-4">{error}</div>}

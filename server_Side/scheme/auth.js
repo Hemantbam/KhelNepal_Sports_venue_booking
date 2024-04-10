@@ -435,10 +435,10 @@ exports.getUsers = async (req, res, next) => {
     let users;
     if (id) {
       // If ID is provided, find user by ID
-      users = await User.findById(id, 'username fullName profilePicture email role');
+      users = await User.findById(id, 'username fullName profilePicture email role ');
     } else if (venuereq) {
-      users = await User.findById(venuereq, 'username fullName profilePicture email role');
-
+      users = await User.find({ 
+        venuereq: true }, 'username fullName profilePicture email role');
     }
     else {
       // If no ID provided, retrieve all users with necessary fields

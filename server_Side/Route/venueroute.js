@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/venues",  getVenues); // Get all venues
 router.post("/venues", uploadvenue.single('image'), addVenue); // Add a new venue
-router.put("/venues/:id", venueManagerAuth, updateVenue); // Update an existing venue
-router.delete("/venues/:id", venueManagerAuth, deleteVenue); // Delete a venue
+router.put("/venues",uploadvenue.single('image'),  updateVenue); // Update an existing venue
+router.delete("/venues",  deleteVenue); // Delete a venue
 
 module.exports = router;

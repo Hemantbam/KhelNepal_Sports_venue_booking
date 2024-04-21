@@ -44,6 +44,7 @@ const Comment = ({ userID, venueID }) => {
             setSuccessMessage("Review submitted successfully!");
             // Reset rating and comment after submission
             setRating(0);
+            window.location.reload();
             setComment("");
         } catch (error) {
             // Handle error here

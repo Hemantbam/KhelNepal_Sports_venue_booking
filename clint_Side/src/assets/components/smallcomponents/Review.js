@@ -54,7 +54,7 @@ const Review = ({id}) => {
                     activeColor="#ea580c"
                   />
                   <span className="text-orange-600 font-bold ml-3 text-sm">
-                    3.0
+                    {review.rating}
                   </span>
                 </span>
               </div>

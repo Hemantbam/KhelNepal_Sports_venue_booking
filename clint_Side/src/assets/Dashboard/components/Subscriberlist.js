@@ -18,16 +18,6 @@ export default function SubscriberList() {
     fetchSubscribers();
   }, []);
 
-  const handleEditSubscriber = (id) => {
-    // Handle edit action
-    console.log('Edit subscriber:', id);
-  };
-
-  const handleDeleteSubscriber = (id) => {
-    // Handle delete action
-    console.log('Delete subscriber:', id);
-  };
-
   return (
     <div className="container mx-auto py-8 px-4 text-center">
       <h1 className="text-3xl font-semibold mb-4 text-orange-600 mx-auto">Subscribers</h1>
@@ -39,7 +29,7 @@ export default function SubscriberList() {
             <tr>
               <th className="border py-2 px-4">S.N</th>
               <th className="border py-2 px-4">Email</th>
-              <th className="border py-2 px-4">Actions</th>
+              <th className="border py-2 px-4">Joined At</th>
             </tr>
           </thead>
           <tbody>
@@ -47,22 +37,7 @@ export default function SubscriberList() {
               <tr key={subscriber._id} className="bg-blue-100">
                 <td className="border py-2 px-4">{index + 1}.</td>
                 <td className="border py-2 px-4">{subscriber.email}</td>
-                <td className="border py-2 px-4">
-                  <div className="flex flex-col sm:flex-row justify-center">
-                    <button
-                      className="bg-orange-600 text-white px-3 py-1 rounded mb-2 sm:mr-2 sm:mb-0 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-600"
-                      onClick={() => handleEditSubscriber(subscriber._id)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
-                      onClick={() => handleDeleteSubscriber(subscriber._id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+                <td className="border py-2 px-4">{formatJoinedAt(subscriber.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -70,4 +45,20 @@ export default function SubscriberList() {
       )}
     </div>
   );
+}
+
+// Function to format the joined at date
+function formatJoinedAt(dateString) {
+  const date = new Date(dateString);
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    timeZoneName: 'short'
+  };
+  return date.toLocaleString(undefined, options);
 }

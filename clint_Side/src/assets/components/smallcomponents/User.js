@@ -12,6 +12,7 @@ const User = ({ userid }) => {
         setUser(response.data.users); // Assuming the response contains the user object
       } catch (error) {
         console.error('Error fetching user:', error);
+        return<>{"Error Fetching User"}</>
       }
     };
 

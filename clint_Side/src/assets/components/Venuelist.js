@@ -25,10 +25,9 @@ export default function Venuelist({ venues }) {
       </div>
       {/* Service List */}
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap -mx-4">
+        <div className="flex flex-wrap justify-center -mx-4">
           {venues.map((res, index) => (
             <div key={index} className={`${calculateWidth()} px-4 mb-8`}>
-
               <div className="max-w-lg bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
                 <img className="w-full h-64 sm:h-80 object-cover object-center" src={`${API}${res.image}`} alt='Venue' />
                 <div className="p-5">

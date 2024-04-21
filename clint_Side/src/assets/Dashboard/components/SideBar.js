@@ -35,7 +35,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
   const sidebarClassName = isOpen ? "block" : "hidden";
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if(token){
+    if (token) {
       const decodedToken = jwtDecode(token);
       if (decodedToken.role == 'basic') {
         setBasic(true);
@@ -44,7 +44,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
         setAdmin(true);
       }
     }
-   
+
   }, []);
   return (
     <aside
@@ -158,7 +158,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                   </svg>
                   Add Venue
                 </span></li> : <></>}
-                {!Basic ? <li className="cursor-pointer">
+              {!Basic ? <li className="cursor-pointer">
                 <span
                   onClick={() => onMenuClick("venues")}
                   className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
@@ -184,7 +184,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                   Venue List
                 </span>
               </li> : <></>}
-              {!Basic &&Admin? <li className="cursor-pointer">
+              {!Basic && Admin ? <li className="cursor-pointer">
                 <span
                   onClick={() => onMenuClick("userlist")}
                   className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
@@ -211,7 +211,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                 </span>
               </li> : <></>}
 
-              {!Basic &&Admin? <li className="cursor-pointer">
+              {!Basic && Admin ? <li className="cursor-pointer">
                 <span
                   onClick={() => onMenuClick("subscriberlist")}
                   className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
@@ -237,7 +237,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                   Subscriber List
                 </span>
               </li> : <></>}
-              {!Basic &&Admin? <li className="cursor-pointer relative">
+              {!Basic && Admin ? <li className="cursor-pointer relative">
                 <span
                   onClick={() => onMenuClick("contactlist")}
                   className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
@@ -268,42 +268,73 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                 </span>
               </li> : <></>}
               {!Basic && Admin ? (
-    <li className="cursor-pointer relative">
-        <span
-            onClick={() => onMenuClick("venuereqlist")}
-            className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group relative" // Added relative class
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                className="mr-3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path d="M21 3v4.586c0 .346-.08.687-.232 1H19M16.414 19l-2.293-2.293a2 2 0 0 0-2.828 0l-7 7" />
-                <path d="M18 10l3-3-3-3" />
-                <path d="M18 10l3 3-3 3" />
-            </svg>
-            Request List (Manager)
-            {venueReqCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-                    {venueReqCount}
-                </span>
-            )}
-        </span>
-    </li>
-) : (
-    <></>
-)}
+                <li className="cursor-pointer relative">
+                  <span
+                    onClick={() => onMenuClick("venuereqlist")}
+                    className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group relative" // Added relative class
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                      className="mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 3v4.586c0 .346-.08.687-.232 1H19M16.414 19l-2.293-2.293a2 2 0 0 0-2.828 0l-7 7" />
+                      <path d="M18 10l3-3-3-3" />
+                      <path d="M18 10l3 3-3 3" />
+                    </svg>
+                    Request List (Manager)
+                    {venueReqCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                        {venueReqCount}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ) : (
+                <></>
+              )}
+
+                <li className="cursor-pointer relative">
+                  {/* <span
+                    onClick={() => onMenuClick("bookinglist")}
+                    className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group relative" // Added relative class
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                      className="mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 3v4.586c0 .346-.08.687-.232 1H19M16.414 19l-2.293-2.293a2 2 0 0 0-2.828 0l-7 7" />
+                      <path d="M18 10l3-3-3-3" />
+                      <path d="M18 10l3 3-3 3" />
+                    </svg>
+                    Booking List
+                    {venueReqCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                        {venueReqCount}
+                      </span>
+                    )}
+                  </span> */}
+                </li>
+             
 
             </ul>
-         
-            
+
+
             <ul className="space-y-2 pb-2 ">
 
 

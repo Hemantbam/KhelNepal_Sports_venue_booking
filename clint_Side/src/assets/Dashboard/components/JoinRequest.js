@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API } from '../../Data/baseIndex';
+import Cookies from 'js-cookie'; // Import the Cookies library
+import { useNavigate } from 'react-router-dom';
 
-const JoinRequest = () => {
+const JoinRequest = ({ onMenuClick }) => {
     const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -23,21 +26,17 @@ const JoinRequest = () => {
     
         fetchUsers();
     }, []);
-    
 
-    const handleAcceptRequest = (userId) => {
-        // Implement functionality to accept the join request for the user with the specified userId
-        console.log('Accepted join request for user:', userId);
-    };
-
-    const handleRejectRequest = (userId) => {
-        // Implement functionality to reject the join request for the user with the specified userId
-        console.log('Rejected join request for user:', userId);
+    const handleViewProfile = (userId) => {
+        // Set the user ID in a cookie
+        Cookies.set('selectedUserId', userId);
+        // Trigger the menu click to switch to the edit profile page
+        onMenuClick('editProfile');
     };
 
     return (
         <div className='text-center pt-5'>
-        <h1 className="text-3xl font-semibold mb-4 text-orange-600 mx-auto w-full">Join Requests</h1>
+            <h1 className="text-3xl font-semibold mb-4 text-orange-600 mx-auto w-full">Join Requests</h1>
             <div className="container mx-auto py-8 px-4 text-center">
                 {users.length === 0 ? (
                     <p>No join requests found</p>
@@ -59,16 +58,10 @@ const JoinRequest = () => {
                                     <td className="border py-2 px-4">{user.email}</td>
                                     <td className="border py-2 px-4">
                                         <button
-                                            className="bg-green-600 text-white px-3 py-1 rounded mr-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"
-                                            onClick={() => handleAcceptRequest(user._id)}
+                                            className="bg-orange-600 text-white px-3 py-1 rounded mr-2 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-600"
+                                            onClick={() => handleViewProfile(user._id)}
                                         >
-                                            Accept
-                                        </button>
-                                        <button
-                                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
-                                            onClick={() => handleRejectRequest(user._id)}
-                                        >
-                                            Reject
+                                            View Profile
                                         </button>
                                     </td>
                                 </tr>

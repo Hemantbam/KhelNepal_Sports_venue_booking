@@ -1,12 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const User = require("../model/user"); 
+const User = require("../model/user");
 const Payment = require("../model/payment");
-const Booking=require("../model/booking");
+const Booking = require("../model/booking");
 const nodemailer = require("nodemailer");
 const { v4: uuidv4 } = require('uuid');
 const { API, mailOptions, jwtSecret } = require("../Datas");
+const Venue = require("../model/venue");
 
 
 // Create a transporter for sending emails
@@ -125,13 +126,14 @@ exports.update = async (req, res, next) => {
   let decodedToken;
   try {
     decodedToken = jwt.verify(token, jwtSecret);
+    console.log('Decoded Token:', decodedToken);
   } catch (error) {
+    console.error('Error verifying token:', error);
     return res.status(401).json({ message: 'Invalid token' });
   }
-  var id;
-  const { username, email, role } = decodedToken;
+const {role,username,email}=decodedToken;  
   if (role == 'admin') {
-    id = req.body.id;
+    id = req.query.id;
   } else {
     id = decodedToken.id;
   }
@@ -151,14 +153,6 @@ exports.update = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized to update this profile" });
     }
 
-    if (await User.findOne({ username: username, _id: { $ne: id } })) {
-      return res.status(400).json({ message: "Username already exists" });
-    }
-
-    if (await User.findOne({ email: email, _id: { $ne: id } })) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
     // Update logic for admins
     if (role === "admin") {
       updateAdminProfile(req, userToUpdate);
@@ -176,17 +170,21 @@ exports.update = async (req, res, next) => {
       error: error.message,
     });
   }
-};// Function to update user profile for admin users
-// Function to update user profile for admin users
-function updateAdminProfile(req, userToUpdate) {
-  const { username, email, fullName, PAN, phoneNumber, role, ...otherFields } = req.body;
+};
 
-  // Update basic profile information
-  userToUpdate.username = username || userToUpdate.username;
-  userToUpdate.fullName = fullName || userToUpdate.fullName;
-  userToUpdate.email = email || userToUpdate.email;
-  userToUpdate.PAN = PAN || userToUpdate.PAN;
-  userToUpdate.phoneNumber = phoneNumber || userToUpdate.phoneNumber;
+function updateAdminProfile(req, userToUpdate) {
+  const { role, isRejected, venuereq, ...otherFields } = req.body;
+
+  // Ensure admin can only update role
+  if (role && userToUpdate.role !== 'admin') {
+    userToUpdate.role = role;
+  }
+
+  // Update isRejected field if provided
+  userToUpdate.isRejected = isRejected !== undefined ? isRejected : userToUpdate.isRejected;
+
+  // Update venuereq field if provided
+  userToUpdate.venuereq = venuereq !== undefined ? venuereq : userToUpdate.venuereq;
 
   // Update nested fields
   for (const key in otherFields) {
@@ -200,22 +198,24 @@ function updateAdminProfile(req, userToUpdate) {
   }
 
   // Update profile picture if provided
-  userToUpdate.profilePicture = req.file ? `uploads/profile/${req.file.filename}` : userToUpdate.profilePicture;
-
-  // Update role if provided
-  userToUpdate.role = role || userToUpdate.role;
+  if (req.file) {
+    userToUpdate.profilePicture = `uploads/profile/${req.file.filename}`;
+  }
 }
 
-// Function to update user profile for non-admin users
 function updateNonAdminProfile(req, userToUpdate, roleE) {
-  const { username, email, fullName, PAN, phoneNumber, venuereq, role, ...otherFields } = req.body;
-  console.log(req);
+  const { fullName, PAN, phoneNumber, venuereq, role, isRejected, ...otherFields } = req.body;
+
   // Update basic profile information
-  userToUpdate.username = username || userToUpdate.username;
   userToUpdate.fullName = fullName || userToUpdate.fullName;
-  userToUpdate.email = email || userToUpdate.email;
   userToUpdate.PAN = PAN || userToUpdate.PAN;
   userToUpdate.phoneNumber = phoneNumber || userToUpdate.phoneNumber;
+
+  // Update isRejected field if provided
+  userToUpdate.isRejected = isRejected !== undefined ? isRejected : userToUpdate.isRejected;
+
+  // Update venuereq field if provided
+  userToUpdate.venuereq = venuereq !== undefined ? venuereq : userToUpdate.venuereq;
 
   // Update nested fields
   for (const key in otherFields) {
@@ -231,10 +231,12 @@ function updateNonAdminProfile(req, userToUpdate, roleE) {
   // Update profile picture if provided
   userToUpdate.profilePicture = req.file ? `uploads/profile/${req.file.filename}` : userToUpdate.profilePicture;
 
-
+  // Update venuereq field for basic users
   if (roleE === 'basic') {
     userToUpdate.venuereq = venuereq || userToUpdate.venuereq;
   }
+
+  // Update role and venuereq field for admin users
   if (roleE === 'admin') {
     userToUpdate.venuereq = false;
     userToUpdate.role = role || userToUpdate.role;
@@ -257,38 +259,37 @@ exports.deleteUser = async (req, res) => {
       return res.status(403).json({ message: 'Only admin can delete users' });
     }
 
-    const { id } = req.body;
-
-    if (!id) {
+    const userId = req.query.id; // Assuming the user ID is passed in the query parameter 'id'
+    if(userId==decodedToken.id) {
+      return res.status(400).json({message:"You cannot delete yourself"})
+    }
+    if (!userId) {
       return res.status(400).json({ message: 'User ID not provided' });
     }
 
-    const user = await User.findById(id);
-
+    // Check if the user exists
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Find related bookings using managedBy field
-    const bookings = await Booking.find({ managedBy: id });
-    console.log(bookings);
-    // Find related payments using bookings
-    for (const booking of bookings) {
-      await Payment.deleteMany({ bookingid: booking._id });
-    }
+    // Find venues managed by the user
+    const venues = await Venue.find({ managedBy: userId });
 
-    // Delete the bookings related to the user
-    await Booking.deleteMany({ managedBy: id });
+    // Delete venues managed by the user
+    await Venue.deleteMany({ managedBy: userId });
 
     // Delete the user
-    await user.deleteOne();
+    await User.findByIdAndDelete(userId);
 
-    return res.status(200).json({ message: 'User successfully deleted', user });
+    return res.status(200).json({ message: 'User and associated venues successfully deleted' });
   } catch (error) {
     console.error(error);
     return res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+
 
 
 exports.adminAuth = (req, res, next) => {
@@ -437,8 +438,9 @@ exports.getUsers = async (req, res, next) => {
       // If ID is provided, find user by ID
       users = await User.findById(id, 'username fullName profilePicture email role ');
     } else if (venuereq) {
-      users = await User.find({ 
-        venuereq: true }, 'username fullName profilePicture email role');
+      users = await User.find({
+        venuereq: true
+      }, 'username fullName profilePicture email role');
     }
     else {
       // If no ID provided, retrieve all users with necessary fields
@@ -458,3 +460,31 @@ exports.getUsers = async (req, res, next) => {
 
 
 
+exports.getUserForAdmin = async (req, res) => {
+  try {
+    // Extract the bearer token from the request headers
+    const token = req.headers.authorization.split(' ')[1];
+
+    // Decode the bearer token to get the role of the user
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    // Check if the user's role is 'admin'
+    if (decodedToken.role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Fetch the user data from the database excluding the password field
+    const user = await User.findById(req.query.id).select('-password');
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Send the user data as the response
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

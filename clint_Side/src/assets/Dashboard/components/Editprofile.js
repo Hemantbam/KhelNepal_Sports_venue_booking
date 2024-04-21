@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { API } from '../../Data/baseIndex';
-
+import Cookies from 'js-cookie';
 // Define the function to build FormData recursively for nested objects
 function buildFormData(formData, data, parentKey) {
   if (data && typeof data === 'object' && !(data instanceof Date) && !(data instanceof File) && !(data instanceof Blob)) {
@@ -29,14 +29,17 @@ export default function EditProfile() {
   const [isBasicUser, setIsBasicUser] = useState(false);
   const [IsVenue, setIsVenue] = useState();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [decoded] = useState(jwtDecode(localStorage.getItem('token')));
+  const userId = Cookies.get('selectedUserId') || decoded.id;
+  console.log(userId);
   const [user, setUser] = useState({
-    id:'',
     username: '',
     fullName: '',
     email: '',
     PAN: '',
     phoneNumber: '',
-    venuereq:false,
+    venuereq: false,
+    isrejected:false,
     address: {
       street: '',
       city: '',
@@ -52,7 +55,6 @@ export default function EditProfile() {
     profilePicture: '',
     role: '',
   });
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -62,49 +64,62 @@ export default function EditProfile() {
           setSuccess(null);
           return;
         }
-  
+
         const decodedToken = jwtDecode(token);
-  
-        switch (decodedToken.role) {
-          case 'basic':
-            const basicResponse = await axios.get(`${API}basicauth`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setUser(basicResponse.data.user);
-            setIsBasicUser(true);
-            break;
-          case 'venue':
-            const venueResponse = await axios.get(`${API}venueauth`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setUser(venueResponse.data.user);
-            setIsVenue(true);
-            break;
-          case 'admin':
-            const adminResponse = await axios.get(`${API}adminauth`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setUser(adminResponse.data.user);
-            setIsAdmin(true);
-            break;
-          default:
-            break;
+
+
+        if (decodedToken.id === userId) {
+          switch (decodedToken.role) {
+            case 'basic':
+              const basicResponse = await axios.get(`${API}basicauth`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              setUser(basicResponse.data.user);
+              setIsBasicUser(true);
+              break;
+            case 'venue':
+              const venueResponse = await axios.get(`${API}venueauth`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              setUser(venueResponse.data.user);
+              setIsVenue(true);
+              break;
+            case 'admin':
+              const adminResponse = await axios.get(`${API}adminauth`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              setUser(adminResponse.data.user);
+              setIsAdmin(true);
+              break;
+            default:
+              break;
+          }
+        } else {
+          const response = await axios.get(`${API}api/auth/user?id=${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setIsAdmin(true)
+          setUser(response.data.user);
         }
+
+        setError(null);
       } catch (error) {
         console.error('Error fetching user data:', error);
         setError(error.message || 'An error occurred while fetching user data.');
       }
     };
-  
+
     fetchData();
-  }, []);
-  
+  }, [userId]);
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -153,25 +168,29 @@ export default function EditProfile() {
         setSuccess(null);
         return;
       }
-
+  
       // Ensure that user is not null or undefined before processing
       if (!user) {
         setError('User data is missing.');
         setSuccess(null);
         return;
       }
-
+  
+      // Set venuereq to false
+      user.venuereq = false;
+  
       const formData = jsonToFormData(user); // Convert user object to FormData
-
+  
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       };
-
-      const updateResponse = await axios.put(`${API}api/auth/update`, formData, config);
+  
+      const updateResponse = await axios.put(`${API}api/auth/update?id=${userId}`, formData, config);
       setSuccess(updateResponse.data.message);
+      window.location.href = '/dashboard';
       setError(null);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -183,6 +202,7 @@ export default function EditProfile() {
       setSuccess(null);
     }
   };
+  
 
   const handleButtonClick = () => {
     setError(null);
@@ -195,11 +215,11 @@ export default function EditProfile() {
           Edit Profile
         </h1>
         <form className="space-y-6" onSubmit={handleSubmit}>
-                 {/* Profile Picture */}
+          {/* Profile Picture */}
 
-                 <div>
+          <div>
             <label htmlFor="image" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-              Profile Picture<br/>
+              Profile Picture<br />
               <small>Click on image to select New Profile</small>
 
             </label>
@@ -212,12 +232,12 @@ export default function EditProfile() {
             />
 
             <label htmlFor="image" className="w-60 mx-auto flex items-center justify-center h-60  cursor-pointer border bottom-2 border-gray-400 rounded-full p-2 text-center">
-              { user.profile||user.profilePicture ? (
+              {user.profile || user.profilePicture ? (
                 <img
-                  src={user.profilePicture instanceof File ? URL.createObjectURL(user.profilePicture) : `${API}${isBasicUser?user.profile:user.profilePicture}`}
+                  src={user.profilePicture instanceof File ? URL.createObjectURL(user.profilePicture) : `${API}${isBasicUser ? user.profile : user.profilePicture}`}
                   alt="Selected Image"
                   className="max-h-60 min-h-60 min-w-60  object-cover rounded-full max-w-60 bg-cover mx-auto "
-                  
+
                 />
               ) : (
                 <span>Select Image</span>
@@ -420,27 +440,51 @@ export default function EditProfile() {
               />
             </div>
           )}
-   
+
 
           {/* Role - Only visible for admins */}
-          {isAdmin && (
-            <div>
-              <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-                Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={user.role}
-                onChange={handleChange}
-                className="w-full rounded-md border border-gray-400 p-2 text-sm"
-              >
-                <option value="basic">Basic</option>
-                <option value="venue">Venue</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-          )}
+          // Inside the return statement of the EditProfile component
+
+{isAdmin && (
+  /* Render fields editable by admin only */
+  <>
+    {/* Role - Only visible for admins */}
+    <div>
+      <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+        Role
+      </label>
+      <select
+        id="role"
+        name="role"
+        value={user.role}
+        onChange={handleChange}
+        className="w-full rounded-md border border-gray-400 p-2 text-sm"
+      >
+        <option value="basic">Basic</option>
+        <option value="venue">Venue</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    {/* isRejected - Only visible for admins */}
+    <div>
+      <label htmlFor="isRejected" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+        Rejected
+      </label>
+      <select
+        id="isRejected"
+        name="isRejected"
+        value={user.isrejected}
+        onChange={handleChange}
+        className="w-full rounded-md border border-gray-400 p-2 text-sm"
+      >
+        <option value={true}>Yes</option>
+        <option value={false}>No</option>
+      </select>
+    </div>
+   
+  </>
+)}
+
           {/* Error message */}
           {error && (
             <div className="text-red-600 text-sm">{error}</div>

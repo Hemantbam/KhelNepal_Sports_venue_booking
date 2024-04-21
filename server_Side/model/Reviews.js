@@ -1,28 +1,23 @@
 const mongoose = require("mongoose");
-
-// Define the payment schema
 const ReviewScheme = new mongoose.Schema({
-
-    venueid:{
+    venueid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue',
-        unique: true,
         required: true
     },
-    userid:{
+    userid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        unique: true,
         required: true
     },
-    comment:{
-        type:String,
+    comment: {
+        type: String,
         maxLength: 250,
-        required:true
+        required: true
     },
-    rating:{
-        type:Number,
-        default:5
+    rating: {
+        type: Number,
+        default: 5
     },
     createdAt: {
         type: Date,

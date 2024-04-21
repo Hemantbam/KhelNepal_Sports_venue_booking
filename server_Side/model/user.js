@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
     enum: [true, false],
     default: false,
   },
+  isrejected: {
+    type: Boolean,
+    default: false,
+  },
 
   address: {
     street: {

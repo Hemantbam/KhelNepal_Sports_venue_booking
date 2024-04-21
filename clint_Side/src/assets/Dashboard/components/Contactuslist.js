@@ -18,15 +18,27 @@ export default function ContactList() {
     fetchContacts();
   }, []);
 
-  const handleEditContact = (id) => {
-    // Handle edit action
-    console.log('Edit contact:', id);
+  const handleEditContact = async (id) => {
+    try {
+      const updatedContacts = contacts.map(contact => {
+        if (contact._id === id) {
+          // Toggle the reached property
+          const updatedContact = { ...contact, reached: !contact.reached };
+          // Send updated contact to the backend
+          axios.put(`${API}api/contact`, updatedContact);
+          return updatedContact;
+        }
+        return contact;
+      });
+      setContacts(updatedContacts);
+    } catch (error) {
+      console.error('Error updating contact:', error);
+    }
   };
 
-  const handleDeleteContact = (id) => {
-    // Handle delete action
-    console.log('Delete contact:', id);
-  };
+  // Split contacts into reached and unreached arrays
+  const reachedContacts = contacts.filter(contact => contact.reached);
+  const unreachedContacts = contacts.filter(contact => !contact.reached);
 
   return (
     <div className="container mx-auto py-8 px-4 text-center">
@@ -46,42 +58,42 @@ export default function ContactList() {
               </tr>
             </thead>
             <tbody>
-              {contacts.map((contact, index) => (
-                <tr key={contact._id} className={contact.reached ? "bg-white" : "bg-red-100"}>
+              {/* Render unreached contacts */}
+              {unreachedContacts.map((contact, index) => (
+                <tr key={contact._id} className="bg-red-100">
                   <td className="border py-2 px-4">{index + 1}.</td>
                   <td className="border py-2 px-4">{contact.email}</td>
                   <td className="border py-2 px-4">{contact.subject}</td>
                   <td className="border py-2 px-4">{contact.message}</td>
                   <td className="border py-2 px-4">
-                    <div className="flex flex-col sm:flex-row justify-center">
-                      <button
-                        className="bg-orange-600 text-white px-3 py-1 rounded mb-2 sm:mr-2 sm:mb-0 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-600"
-                        onClick={() => handleEditContact(contact._id)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
-                        onClick={() => handleDeleteContact(contact._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    <button
+                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
+                      onClick={() => handleEditContact(contact._id)}
+                    >
+                      Mark Reached
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {/* Render reached contacts */}
+              {reachedContacts.map((contact, index) => (
+                <tr key={contact._id} className="bg-white">
+                  <td className="border py-2 px-4">{index + 1 + unreachedContacts.length}.</td>
+                  <td className="border py-2 px-4">{contact.email}</td>
+                  <td className="border py-2 px-4">{contact.subject}</td>
+                  <td className="border py-2 px-4">{contact.message}</td>
+                  <td className="border py-2 px-4">
+                    <button
+                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"
+                      onClick={() => handleEditContact(contact._id)}
+                    >
+                      Mark Unreached
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="flex justify-center mt-4">
-            <div className="mr-4 flex items-center">
-              <div className="w-4 h-4 bg-red-100 mr-2"></div>
-              <span>Not Reached</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-white mr-2"></div>
-              <span>Reached</span>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -58,8 +58,6 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-
-            {/* <SearchBar /> */}
           </div>
         </div>
       </section>

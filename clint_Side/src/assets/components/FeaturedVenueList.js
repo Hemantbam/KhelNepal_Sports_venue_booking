@@ -54,10 +54,11 @@ const Venue = () => {
     afterChange={() => setIsMoving(false)}
     containerClass="carousel-container"
     itemClass="carousel-item"
+
     >
 
         {venues.map(venue => (
-          <div key={venue._id} className="max-w-xs bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+          <div key={venue._id} className="max-w-xs bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden mx-2">
             <img className="w-full h-60 object-cover object-center" src={`${API}${venue.image}`} alt={venue.name} />
             <div className="p-5">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">{venue.name}</h2>

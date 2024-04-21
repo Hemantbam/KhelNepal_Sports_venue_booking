@@ -9,6 +9,7 @@
     "autoprefixer": "^9.8.6",
     "axios": "^1.6.7",
     "chart.js": "^4.4.1",
+    "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "khalti-checkout-web": "^2.2.0",
     "postcss": "^8.4.35",

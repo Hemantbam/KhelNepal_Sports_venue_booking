@@ -99,42 +99,99 @@ exports.addVenue = async (req, res, next) => {
 };
 
 
-// Controller function to update an existing venue
-exports.updateVenue = async (req, res, next) => {
-    // Extract venue ID from request parameters
-    const { id } = req.params;
-    // Extract updated venue data from request body
-    const { name, location, capacity, description, pricePerHour, facilities } = req.body;
-
+exports.updateVenue = async (req, res) => {
     try {
-        // Find the venue by ID and update its data
-        const updatedVenue = await Venue.findByIdAndUpdate(id, { name, location, capacity, description, pricePerHour, facilities }, { new: true });
+        // Extract token from request headers
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const token = authorizationHeader.split('Bearer ')[1];
+        
+        // Verify token
+        const decodedToken = jwt.verify(token, jwtSecret);
+
+        // Extract venue ID from request parameters
+        const { id } = req.query;
+
+        // Retrieve the existing venue data
+        const existingVenue = await Venue.findById(id);
+
+        // Check if the decoded token ID matches managedBy of the venue or if role is admin
+        if (decodedToken.id == existingVenue.managedBy || decodedToken.role == 'admin') {
+            const { name, location, capacity, description, pricePerHour, facilities } = req.body;
+
+        // Check if a file was uploaded and set the image accordingly
+        console.log(req.file);
+        const image = req.file ? `uploads/venues/${req.file.filename}` : existingVenue.image;
+
+        const updatedVenue = await Venue.findByIdAndUpdate(
+            { _id: id, managedBy: decodedToken.id },
+            { name, location, capacity, description, pricePerHour, facilities, image },
+            { new: true }
+        );
 
         if (!updatedVenue) {
             return res.status(404).json({ message: "Venue not found" });
         }
 
         res.status(200).json({ message: "Venue updated successfully", venue: updatedVenue });
+        }else{
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        // Extract updated venue data from request body
+        
     } catch (error) {
+        console.error('Error updating venue:', error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
-// Controller function to delete a venue
-exports.deleteVenue = async (req, res, next) => {
+
+
+exports.deleteVenue = async (req, res) => {
     // Extract venue ID from request parameters
-    const { id } = req.params;
+    const id = req.query.id; // Change from req.query.id to req.query.id directly
 
     try {
-        // Find the venue by ID and delete it
-        const deletedVenue = await Venue.findByIdAndDelete(id);
+        // Extract the bearer token from the request headers
+        const bearerHeader = req.headers.authorization;
 
-        if (!deletedVenue) {
+        // Check if the bearer token is present
+        if (!bearerHeader || !bearerHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: "Unauthorized: Missing or invalid token" });
+        }
+
+        // Extract the token from the bearer header
+        const token = bearerHeader.split(' ')[1];
+
+        // Verify and decode the token to get user information
+        const decodedToken = jwt.verify(token, jwtSecret);
+        const userId = decodedToken.id;
+        const userRole = decodedToken.role;
+
+        // Find the venue by ID
+        console.log(id);
+        const venue = await Venue.findById(id);
+
+        // Check if the venue exists
+        if (!venue) {
             return res.status(404).json({ message: "Venue not found" });
         }
 
-        res.status(200).json({ message: "Venue deleted successfully", venue: deletedVenue });
+        console.log(venue.managedBy,",",userId);
+        // Check if the user is admin or manages the venue
+        if (userRole === 'admin' ||  venue.managedBy.toString() === userId) {
+            // Delete the venue
+            const deletedVenue = await Venue.findByIdAndDelete(id);
+            return res.status(200).json({ message: "Venue deleted successfully", venue: deletedVenue });
+        } else {
+            return res.status(403).json({ message: "You are not authorized to delete this venue" });
+        }
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" });
+        // Handle errors
+        console.error('Error deleting venue:', error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

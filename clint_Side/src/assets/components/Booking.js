@@ -11,7 +11,7 @@ const Booking = () => {
     const [Venue, setVenue] = useState({ pricePerHour: 0 });
     const { id } = useParams();
     const history = useNavigate();
-    
+
     const [bookingData, setBookingData] = useState({
         venue: id,
         fullName: '',
@@ -31,9 +31,9 @@ const Booking = () => {
     };
 
     useEffect(() => {
-        if(!localStorage.getItem('token')){
+        if (!localStorage.getItem('token')) {
             alert("Login First");
-            window.location.href= "/login"
+            window.location.href = "/login"
         }
         axios.get(`${API}api/venues?id=${id}`).then((response) => {
             console.log('Venue Info : ', response.data.venues[0]);
@@ -131,7 +131,7 @@ const Booking = () => {
             };
             const checkout = new KhaltiCheckout(config);
             // Show Khalti checkout modal
-            checkout.show({ amount: price*100 }); // Pass calculated price to Khalti
+            checkout.show({ amount: price * 100 }); // Pass calculated price to Khalti
         } catch (error) {
             setError(error.message || 'An error occurred during payment processing.');
             setLoading(false);
@@ -145,7 +145,10 @@ const Booking = () => {
         const endDate = new Date(endDateStr);
         const durationInHours = (endDate - startDate) / (1000 * 60 * 60);
         const pricePerHour = Venue.pricePerHour;
-        return durationInHours * pricePerHour<=0 ? 0 :durationInHours * pricePerHour;
+        const calculatedValue = Math.ceil(durationInHours * pricePerHour);
+        return calculatedValue <= 0 ? 0 : calculatedValue;
+        
+
     };
 
     return (
@@ -211,8 +214,8 @@ const Booking = () => {
                                 <div className="w-full px-3 sm:w-1/2">
                                     <div className="mb-5">
                                         <label htmlFor="startDate" className="mb-3 block text-base font-medium text-[#07074D]">
-                                            Start Date<br/>
-                                            <small>Start date should be greater than today 's date and current time.</small><br/>
+                                            Start Date<br />
+                                            <small>Start date should be greater than today 's date and current time.</small><br />
                                         </label>
                                         <input
                                             type="datetime-local"
@@ -228,8 +231,8 @@ const Booking = () => {
                                 <div className="w-full px-3 sm:w-1/2">
                                     <div className="mb-5">
                                         <label htmlFor="endDate" className="mb-3 block text-base font-medium text-[#07074D]">
-                                            End Date<br/>
-                                            <small>End date should be greater than today 's date and current time and startDate.</small><br/>
+                                            End Date<br />
+                                            <small>End date should be greater than today 's date and current time and startDate.</small><br />
                                         </label>
                                         <input
                                             type="datetime-local"

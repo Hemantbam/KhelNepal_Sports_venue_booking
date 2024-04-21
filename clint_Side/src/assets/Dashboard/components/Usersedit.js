@@ -1,9 +1,11 @@
+// UsersEdit.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API } from '../../Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
-
-export default function UsersEdit() {
+import Cookies from 'js-cookie';
+export default function UsersEdit({ onMenuClick }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,25 +27,36 @@ export default function UsersEdit() {
 
   const handleEditUser = (userId) => {
     console.log(`Editing user with ID: ${userId}`);
-    // Implement your edit user functionality here
+    // Set the user ID in a cookie
+    Cookies.set('selectedUserId', userId);
+    // Trigger the menu click to switch to the edit profile page
+    onMenuClick('editProfile');
   };
+
+  
 
   const handleDeleteUser = async (userId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (!confirmDelete) return;
-
+  
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.delete(`${API}api/auth/deleteUser`, {
+      const response = await axios.delete(`${API}api/auth/deleteUser?id=${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        data: { id: userId },
       });
       console.log(response.data);
+      alert('User deleted successfully! And Associated Venues too');
       // Refresh the user list after successful deletion
       setUsers(users.filter(user => user._id !== userId));
     } catch (error) {
+      console.log('Error:', error.response);
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('An error occurred while deleting user.');
+      }
       console.error('Error deleting user:', error);
     }
   };

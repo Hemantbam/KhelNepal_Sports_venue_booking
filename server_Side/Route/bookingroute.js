@@ -34,9 +34,9 @@ router.get('/bookings', async (req, res) => {
 });
 
 // Route to update a booking by ID
-router.put('/bookings/:id', async (req, res) => {
+router.put('/bookings', async (req, res) => {
     try {
-        const updatedBooking = await bookingManager.updateBooking(req.params.id, req.body, req.headers.authorization);
+        const updatedBooking = await bookingManager.updateBooking(req, req);
         res.json(updatedBooking);
     } catch (error) {
         res.status(404).json({ error: error.message });

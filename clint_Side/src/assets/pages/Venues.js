@@ -10,7 +10,7 @@ import { API } from '../Data/baseIndex';
 export default function Venue() {
   const [venues, setVenues] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [venuesPerPage] = useState(12); // Number of venues per page
+  const [venuesPerPage] = useState(2); // Number of venues per page
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -31,7 +31,7 @@ export default function Venue() {
   const indexOfFirstVenue = indexOfLastVenue - venuesPerPage;
   const currentVenues = venues.slice(indexOfFirstVenue, indexOfLastVenue);
 
-  const totalPages = Math.ceil(venues.length / venuesPerPage);
+  const totalPages = Math.ceil(venues.length / venuesPerPage); //roundoff
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

@@ -39,13 +39,9 @@ async function createReview(req, res) {
         console.log(req.body);
         const isAdmin = decodedToken.role == 'admin';
 
-        // Check if user is admin and userId is provided
+        // Create a new review
         if (isAdmin && userId) {
-            // Create a new review on behalf of the provided user
-            const existingReview = await Review.findOne({ venueid: venueId, userid: userId });
-            if (existingReview) {
-                return res.status(400).json({ message: 'Review already given by this user for this venue' });
-            }
+            // If user is admin and userId is provided, create a review on behalf of the provided user
             const newReview = new Review({
                 venueid: venueId,
                 userid: userId,
@@ -57,10 +53,6 @@ async function createReview(req, res) {
             // If not an admin, use the userId from token
             const userIdFromToken = decodedToken.id;
             console.log(userIdFromToken);
-            const existingReview = await Review.findOne({ venueid: venueId, userid: userIdFromToken });
-            if (existingReview) {
-                return res.status(400).json({ message: 'Review already given by this user for this venue' });
-            }
             const newReview = new Review({
                 venueid: venueId,
                 userid: userIdFromToken,
@@ -75,6 +67,7 @@ async function createReview(req, res) {
         return res.status(500).json({ message: `Error creating review: ${error.message}` });
     }
 }
+
 
 module.exports = {
     getReviews,

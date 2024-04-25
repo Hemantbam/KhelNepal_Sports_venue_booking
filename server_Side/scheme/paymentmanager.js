@@ -1,8 +1,7 @@
 const Payment = require('../model/payment');
-const Booking = require('../model/booking');
+const Venue = require('../model/venue'); // Import the Venue model
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../Datas');
-
 
 // Function to retrieve all payments with optional filtering
 async function getPayments(req, res) {
@@ -19,19 +18,18 @@ async function getPayments(req, res) {
             return res.status(401).json({ message: 'Invalid token' });
         }
       
-        const userId = decodedToken.userId;
+        const userId = decodedToken.id;
         const userRole = decodedToken.role;
 
         // Retrieve payments based on the user's role
         let payments;
-        if (userRole === 'admin') {
-            // If the user is an admin, retrieve all payments
-            payments = await Payment.find();
-        } else if (userRole === 'venue') {
-            // If the user is a venue manager, retrieve payments associated with their bookings
-            const bookings = await Booking.find({ user: userId });
-            const bookingIds = bookings.map(booking => booking._id);
-            payments = await Payment.find({ bookingid: { $in: bookingIds } });
+       if((userRole === 'venue'||userRole === 'admin')) {
+            // If the user is a venue manager, find venues managed by the user
+            const venues = await Venue.find({ managedBy: userId });
+            const venueIds = venues.map(venue => venue._id);
+
+            // Find payments associated with the venues owned by the user
+            payments = await Payment.find({ venueid: { $in: venueIds } });
         } else {
             return res.status(403).json({ message: 'Unauthorized access' });
         }

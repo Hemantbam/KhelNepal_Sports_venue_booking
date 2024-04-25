@@ -5,7 +5,13 @@ const paymentSchema = new mongoose.Schema({
     bookingid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Booking',
-        unique: true,
+      
+        required: true
+    },
+    venueid: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue',
+      
         required: true
     },
     paymentdetails: {

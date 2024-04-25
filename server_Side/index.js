@@ -14,7 +14,6 @@ const Subscribe = require('./model/subscription.js');
 const path = require('path');
 const Contact = require("./model/contact.js");
 
-
 // Create the Express app
 const app = express();
 const PORT = 5000;

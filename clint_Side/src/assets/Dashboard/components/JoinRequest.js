@@ -54,7 +54,7 @@ const JoinRequest = ({ onMenuClick }) => {
                             {users.map((user, index) => (
                                 <tr key={user._id}>
                                     <td className="border py-2 px-4">{index + 1}.</td>
-                                    <td className="border py-2 px-4">{user.name}</td>
+                                    <td className="border py-2 px-4">{user.fullName}</td>
                                     <td className="border py-2 px-4">{user.email}</td>
                                     <td className="border py-2 px-4">
                                         <button

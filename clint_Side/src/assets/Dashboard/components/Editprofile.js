@@ -442,9 +442,7 @@ export default function EditProfile() {
           )}
 
 
-          {/* Role - Only visible for admins */}
-          // Inside the return statement of the EditProfile component
-
+        
 {isAdmin && (
   /* Render fields editable by admin only */
   <>

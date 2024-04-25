@@ -2,24 +2,16 @@ const Review = require('../model/Reviews');
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../Datas');
 
-// Function to retrieve all reviews
+
 async function getReviews(req, res) {
     try {
         const { venueid } = req.query;
-        // Assuming `Review` is your Mongoose model
-        let reviews;
-        if (venueid) {
-            reviews = await Review.find({ venueid: venueid });
-        } else {
-            reviews = await Review.find();
-        }
+        const reviews = await Review.find({ venueid: venueid });
         return res.status(200).json({ reviews });
     } catch (error) {
         return res.status(500).json({ message: `Error retrieving reviews: ${error.message}` });
     }
 }
-
-
 
 async function createReview(req, res) {
     try {

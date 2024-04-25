@@ -57,7 +57,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
           <div className="flex-1 px-3 bg-white divide-y justify-between space-y-1 flex flex-col">
             <ul className="space-y-2 pb-2 ">
               {/* Dashboard */}
-              <li className="cursor-pointer">
+              {!Basic?<li className="cursor-pointer">
                 <span
                   onClick={() => onMenuClick("dashboard")}
                   className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group"
@@ -80,7 +80,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                   Dashboard
                 </span>
               </li>
-
+:<></>}
               {/* Edit Profile */}
               <li className="cursor-pointer">
                 <span
@@ -302,7 +302,7 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
               )}
 
                 <li className="cursor-pointer relative">
-                  {/* <span
+                  <span
                     onClick={() => onMenuClick("bookinglist")}
                     className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 flex items-center p-2 group relative" // Added relative class
                   >
@@ -323,12 +323,8 @@ const Sidebar = ({ isOpen, onMenuClick }) => {
                       <path d="M18 10l3 3-3 3" />
                     </svg>
                     Booking List
-                    {venueReqCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-                        {venueReqCount}
-                      </span>
-                    )}
-                  </span> */}
+                    
+                  </span>
                 </li>
              
 

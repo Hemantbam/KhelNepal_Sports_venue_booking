@@ -19,7 +19,7 @@ import EditVenue from '../components/EditVenue';
 import BookingsList from '../components/BookingList';
 
 export default function Dashboard() {
-  const [content, setContent] = useState(<Das />);
+  const [content, setContent] = useState(jwtDecode(localStorage.getItem('token')).role=='basic'?<EditProfile/>:<Das />);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const history = useNavigate(); 
 

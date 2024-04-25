@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { Check } from '../assets/Data/baseIndex';
+import { API, Check } from '../assets/Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
-
 import Login from '../assets/components/Login';
 import Register from '../assets/components/Register';
 import ResetPassword from '../assets/components/Reset';
@@ -59,7 +58,7 @@ const AppRoutes = () => {
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetail />} />
       <Route path="/venues/booking/:id" element={<Booking />} />
-      <Route path="/contactus" element={<ContactUs />} />
+      <Route path="/contactus" element={<ContactUs  />} />
     </Routes>
   );
 };

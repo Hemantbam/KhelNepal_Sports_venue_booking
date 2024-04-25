@@ -17,16 +17,16 @@ export default function BookingsList({ onMenuClick }) {
         try {
             const token = localStorage.getItem('token');
             const decodedToken = jwtDecode(token);
-    
+
             let bookingsData = [];
-    
+
             if (decodedToken.role === 'admin') {
                 const response = await axios.get(`${API}api/bookings`);
                 bookingsData = response.data;
             } else if (decodedToken.role === 'venue') {
                 const venueResponse = await axios.get(`${API}api/venues?managedBy=${decodedToken.id}`);
                 const venues = venueResponse.data.venues;
-                
+
                 // Iterate over each venue ID and fetch bookings separately
                 for (const venue of venues) {
                     const response = await axios.get(`${API}api/bookings?venue=${venue._id}`);
@@ -36,7 +36,7 @@ export default function BookingsList({ onMenuClick }) {
                 const response = await axios.get(`${API}api/bookings?user=${decodedToken.id}`);
                 bookingsData = response.data;
             }
-    
+
             setBookings(bookingsData);
             setLoading(false);
             setError(null);
@@ -111,12 +111,11 @@ export default function BookingsList({ onMenuClick }) {
                         </thead>
                         <tbody>
                             {bookings && bookings.map((booking, index) => (
-                                <tr key={booking._id} className={`${
-                                    booking.status === 'completed' ? 'bg-purple-100' :
-                                    booking.status === 'pending' ? 'bg-blue-100' :
-                                    booking.status === 'confirmed' ? 'bg-green-100' :
-                                    'bg-red-100'
-                                }`}>
+                                <tr key={booking._id} className={`${booking.status === 'completed' ? 'bg-purple-100' :
+                                        booking.status === 'pending' ? 'bg-blue-100' :
+                                            booking.status === 'confirmed' ? 'bg-green-100' :
+                                                'bg-red-100'
+                                    }`}>
                                     <td className="border py-2 px-4">{index + 1}</td>
                                     <td className="border py-2 px-4 text-orange-600 font-bold">
                                         <VenueName venueId={booking.venue} />
@@ -125,7 +124,7 @@ export default function BookingsList({ onMenuClick }) {
                                     <td className="border py-2 px-4">{new Date(booking.endDate).toLocaleString()}</td>
                                     <td className="border py-2 px-4">{booking.fullName || "Not Given"}</td>
                                     <td className="border py-2 px-4">{booking.phoneNumber || "-"}</td>
-                                    <td className="border py-2 px-4">{'Rs.'+booking.price || "-"}</td>
+                                    <td className="border py-2 px-4">{'Rs.' + booking.price || "-"}</td>
                                     <td className="border py-2 px-4">
                                         {(jwtDecode(localStorage.getItem('token')).role === 'basic' &&
                                             booking.status === 'pending') && (
@@ -137,38 +136,60 @@ export default function BookingsList({ onMenuClick }) {
                                                 </button>
                                             )}
 
-                                        {(jwtDecode(localStorage.getItem('token')).role === 'venue' &&
-                                            booking.status === 'pending' && 
-                                            booking.venue.managedBy === jwtDecode(localStorage.getItem('token')).id) && (
-                                                <button
-                                                    onClick={() => handleConfirmBooking(booking._id)}
-                                                    className="bg-green-400 mt-2 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
-                                                    disabled={booking.status !== 'pending'}
-                                                >
-                                                    Confirm
-                                                </button>
-                                            )}
-
-                                        {((jwtDecode(localStorage.getItem('token')).role === 'admin'||'venue') &&
+                                        {(jwtDecode(localStorage.getItem('token')).role !== 'basic' &&
                                             booking.status === 'pending') && (
                                                 <>
-                                                    <button
-                                                        onClick={() => handleConfirmBooking(booking._id)}
-                                                        className="bg-green-400 mt-2 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
-                                                        disabled={booking.status !== 'pending'}
-                                                    >
-                                                        Confirm
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleCancelBooking(booking._id)}
-                                                        className="bg-red-400 mt-2 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                                                        disabled={booking.status !== 'pending'}
-                                                    >
-                                                        Cancel
-                                                    </button>
+                                                    {jwtDecode(localStorage.getItem('token')).role === 'admin' ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleConfirmBooking(booking._id)}
+                                                                className="bg-green-400 mt-2 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+                                                                disabled={booking.status !== 'pending'}
+                                                            >
+                                                                Confirm
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleCancelBooking(booking._id)}
+                                                                className="bg-red-400 mt-2 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                                                                disabled={booking.status !== 'pending'}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {booking.user === jwtDecode(localStorage.getItem('token')).id ? (
+                                                                <button
+                                                                    onClick={() => handleCancelBooking(booking._id)}
+                                                                    className="bg-red-400 mt-2 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            ) : (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleConfirmBooking(booking._id)}
+                                                                        className="bg-green-400 mt-2 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+                                                                        disabled={booking.status !== 'pending'}
+                                                                    >
+                                                                        Confirm
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleCancelBooking(booking._id)}
+                                                                        className="bg-red-400 mt-2 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                                                                        disabled={booking.status !== 'pending'}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </>
+                                                    )}
                                                 </>
                                             )}
                                     </td>
+
+
                                     <td className="border py-2 px-4 text-gray-800 font-bold">
                                         {booking.status}
                                     </td>

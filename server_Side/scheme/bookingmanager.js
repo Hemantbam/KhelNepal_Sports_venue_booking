@@ -44,7 +44,8 @@ function createBooking(req, res) {
                         const serializedData = JSON.stringify(khaltiResponse.data);
                         Payment.create({
                             bookingid: newBooking._id,
-                            amount: khaltiData.amount,
+                        venueid:bookingData.venue,
+                            amount: khaltiData.amount*0.95,
                             paymentdetails: serializedData,
                         })
                             .then(newPayment => {

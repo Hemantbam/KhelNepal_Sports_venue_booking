@@ -1,8 +1,8 @@
-
-const express = require("express");
-const { getPayments } = require("../scheme/paymentmanager");
+const express = require('express');
 const router = express.Router();
+const { getPayments } = require('../scheme/paymentmanager');
 
-router.get("/payments", getPayments); // Get all payments
+// Define route for fetching payments
+router.get('/payments', getPayments);
 
 module.exports = router;

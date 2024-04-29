@@ -39,7 +39,7 @@ const AppRoutes = () => {
         alert('Your session has expired. Please log in again.');
       }
     }
-  }, [location.pathname]); // Call useEffect whenever location.pathname changes
+  }, [location.pathname&&2000]); // Call useEffect whenever location.pathname changes
 
   return (
     <Routes>

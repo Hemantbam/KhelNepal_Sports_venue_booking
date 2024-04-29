@@ -24,7 +24,6 @@ export default function Dashboard() {
   const history = useNavigate(); 
 
   useEffect(() => {
-    Check();
     const token = localStorage.getItem('token');
     if (!token) {
       history('/login');
@@ -32,6 +31,7 @@ export default function Dashboard() {
   }, []);
 
   const handleMenuClick = (menuItem) => {
+ 
     switch (menuItem) {
       case 'dashboard':
         setContent(<Das />);

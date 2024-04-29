@@ -31,7 +31,8 @@ export default function BookingsList({ onMenuClick }) {
                 for (const venue of venues) {
                     const response = await axios.get(`${API}api/bookings?venue=${venue._id}`);
                     bookingsData.push(...response.data);
-                }
+                } const response = await axios.get(`${API}api/bookings?user=${decodedToken.id}`);
+                bookingsData.push(...response.data);
             } else {
                 const response = await axios.get(`${API}api/bookings?user=${decodedToken.id}`);
                 bookingsData = response.data;

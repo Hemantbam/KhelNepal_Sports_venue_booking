@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API } from '../Data/baseIndex';
+import { Link } from 'react-router-dom';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,10 @@ const Newsletter = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(email.trimStart().length<1){
+      alert("Email Needs to be Valid");
+      return;
+    }
     try {
       const response = await axios.post(`${API}api/subscribe`, { email });
       if (response.status === 200) {
@@ -83,12 +88,11 @@ const Newsletter = () => {
             </div>
             <div className="mx-auto max-w-screen-sm text-sm text-left text-gray-500 newsletter-form-footer dark:text-gray-400">
               We care about the protection of your data.{' '}
-              <a
-                href="#"
+              <Link to={`/terms`}
                 className="font-medium text-orange-600 dark:text-orange-500 hover:underline"
               >
                 Read our Privacy Policy
-              </a>
+              </Link>
               .
             </div>
           </form>

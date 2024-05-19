@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import KhaltiCheckout from "khalti-checkout-web";
-import { API } from '../Data/baseIndex';
-import { useNavigate, useParams } from 'react-router-dom';
+import { API, khaltiPublic } from '../Data/baseIndex';
+import {  useNavigate, useParams } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Booking = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [Venue, setVenue] = useState({ pricePerHour: 0 });
-    const { id } = useParams();
+    const [Bookings, setBookings] = useState(null);
+    const { id, user } = useParams();
     const history = useNavigate();
 
     const [bookingData, setBookingData] = useState({
@@ -20,14 +24,154 @@ const Booking = () => {
         startDate: '',
         endDate: '',
         paymentType: 'khalti', // Default payment type
-        price: 0, // Add a state for price
+        price: 0, // Price state initialized to 0
     });
 
     const handleInputChange = (e) => {
+        const { name, value } = e.target;
         setBookingData({
             ...bookingData,
-            [e.target.name]: e.target.value
+            [name]: value
         });
+    };
+
+    const calculatePrice = (startDateStr, endDateStr) => {
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        // Calculate duration in milliseconds
+        const durationInMillis = endDate.getTime() - startDate.getTime();
+        // Convert duration to hours
+        const durationInHours = durationInMillis / (1000 * 60 * 60);
+        // Get price per hour from Venue
+        const pricePerHour = Venue.pricePerHour;
+        // Calculate total price
+        const totalPrice = Math.ceil(durationInHours * pricePerHour);
+
+        return totalPrice <= 0 ? 0 : totalPrice;
+    };
+    const checkOverlap = (startDate1, endDate1, startDate2, endDate2) => {
+        const start1 = new Date(startDate1);
+        const end1 = new Date(endDate1);
+        const start2 = new Date(startDate2);
+        const end2 = new Date(endDate2);
+
+        // Check for overlap
+        return start1 < end2 && end1 > start2;
+    };
+
+    const handlephoneno=(e)=>{
+        const value=e.target.value;
+        if (value.length!=10) {
+         setError("Phone no. must have 10 Numbers...");
+         setTimeout(() => {
+            setError("");
+          }, 1000);
+         return;
+        }
+        setBookingData((prevUser)=>({
+         ...prevUser,
+         phoneNumber:value
+        }))
+       }
+
+    const handleBooking = async (e) => {
+        e.preventDefault();
+        const { fullName, email } = bookingData;
+
+  // Check if fullName or email is not specified
+  if (!fullName || !email || fullName.trim().length === 0 || email.trim().length === 0) {
+    setError("Name and Email must be specified.");
+    setTimeout(() => {
+        setError("");
+      }, 1000);
+    return;
+  }
+
+        // Validate start date and end date
+        const now = new Date();
+        const startDate = new Date(Date.parse(bookingData.startDate));
+        const endDate = new Date(Date.parse(bookingData.endDate));
+
+        if (startDate <= now) {
+            setError('Start date should be after the current date and time.');
+            return;
+        }
+        if (endDate <= startDate) {
+            setError('End date should be greater than the start date.');
+            return;
+        }
+        let isOverlap = false;
+
+        // Check for overlap with existing bookings
+        if (Bookings) {
+            Bookings.forEach(booking => {
+                const { startDate: existingStart, endDate: existingEnd } = booking;
+                if (checkOverlap(startDate, endDate, existingStart, existingEnd)) {
+                    isOverlap = true;
+                }
+            });
+        }
+
+        if (isOverlap) {
+            setError('Error: This time slot is already booked.');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('token');
+
+            const config = {
+                "publicKey": khaltiPublic,
+                "productIdentity": Venue._id,
+                "productName": Venue.name?Venue.name:"Some",
+                "productUrl": window.location.href,
+                "paymentPreference": ["KHALTI"],
+                "eventHandler": {
+                    onSuccess: async (payload) => {
+                        try {
+                            const response = await axios.post(`${API}api/bookings`, {
+                                bookingData: bookingData,
+                                token: token,
+                                khaltiData: payload
+                            });
+                            
+                           if(response.status==200){
+                            setSuccess(true);
+                            setTimeout(() => {
+                                setLoading(false);
+                                history(`/venues/${id}`);
+                            }, 2000);
+                           }
+                        } catch (error) {
+                            setError(error.message || 'An error occurred during payment processing.');
+                            setLoading(false);
+                            console.error('Error processing payment:', error);
+                        }
+                    },
+                    onError: (error) => {
+                        setLoading(false);
+                        setError("Payment Handler Error");
+                        console.log(error);
+                    },
+                    onClose: () => {
+                        setLoading(false);
+                        console.log('Widget is closing');
+                    }
+                }
+            };
+
+            const checkout = new KhaltiCheckout(config);
+            checkout.show({ amount: bookingData.price * 100 });
+
+        } catch (error) {
+            setError(error.message || 'An error occurred during payment processing.');
+            setLoading(false);
+            console.error('Error processing payment:', error);
+        }
     };
 
     useEffect(() => {
@@ -35,258 +179,214 @@ const Booking = () => {
             alert("Login First");
             window.location.href = "/login"
         }
+        if (user === jwtDecode(localStorage.getItem('token')).id) {
+            alert("You cannot book your own Booking..");
+            window.location.href = "/"
+        }
+
         axios.get(`${API}api/venues?id=${id}`).then((response) => {
             console.log('Venue Info : ', response.data.venues[0]);
             setVenue(response.data.venues[0]);
         });
-    }, [id]);
+        axios.get(`${API}api/bookings?venue=${id}`).then((response) => {
+            if (Array.isArray(response.data)) {
+                const filteredBookings = response.data.filter(
+                    res => res.status === "confirmed" && new Date(res.endDate) > new Date()
+                );
+                setBookings(filteredBookings)
+            }
+        });
+    }, [id, user]);
 
+    // Update price when startDate or endDate changes
     useEffect(() => {
-        // Calculate price when startDate or endDate changes
         if (bookingData.startDate && bookingData.endDate) {
             const price = calculatePrice(bookingData.startDate, bookingData.endDate);
-            setBookingData(prevState => ({ ...prevState, price }));
+            setBookingData(prevData => ({
+                ...prevData,
+                price: price
+            }));
         }
     }, [bookingData.startDate, bookingData.endDate]);
 
-    const handleBooking = async (e) => {
-        e.preventDefault();
-        // Validate start date and end date
-        const now = new Date();
-        const startDate = new Date(Date.parse(bookingData.startDate));
-        const endDate = new Date(Date.parse(bookingData.endDate));
-
-        // Check if startDate is after now
-        if (startDate <= now) {
-            setError('Start date should be after the current date and time.');
-            return;
-        }
-
-        // Check if endDate is greater than or equal to startDate
-        if (endDate <= startDate) {
-            setError('End date should be greater than the start date.');
-            return;
-        }
-
-        // Check if the dates are the same
-        const sameDay = startDate.toDateString() === endDate.toDateString();
-
-        // If the dates are the same, compare the times
-        if (sameDay && endDate <= startDate) {
-            setError('End time should be greater than the start time.');
-            return;
-        }
-        // Continue with booking process
-        try {
-            setLoading(true);
-            setError(null);
-            // Calculate price based on start date and end date (already done in useEffect)
-            const price = bookingData.price;
-            price.toFixed(2);
-            // Get JWT token from local storage or wherever you store it
-            const token = localStorage.getItem('token'); // Replace with your token retrieval logic
-            // Initialize Khalti checkout
-            const config = {
-                // Replace the publicKey with yours
-                "publicKey": "test_public_key_fb7335816eb647d4a748906c9c993d82",
-                "productIdentity": Venue._id,
-                "productName": Venue.name,
-                "productUrl": window.location.href,
-                "paymentPreference": [
-                    "KHALTI"
-                ],
-                "eventHandler": {
-                    onSuccess: async (payload) => {
-                        // Send booking data and Khalti data to backend
-                        try {
-                            const response = await axios.post(`${API}api/bookings`, {
-                                bookingData: bookingData,
-                                token: token,
-                                khaltiData: payload
-                            });
-                            setLoading(false);
-                            setSuccess(true);
-                            console.log(response.data);
-                            // Redirect to venue detail page after 2 seconds
-                            setTimeout(() => {
-                                history(`/venues/${id}`); // Replace with your venue detail route
-                            }, 2000);
-                        } catch (error) {
-                            setError(error.message || 'An error occurred during payment processing.');
-                            setLoading(false);
-                            console.error('Error processing payment:', error);
-                            // Handle error, e.g., display an error message to the user
-                        }
-                    },
-                    onError: (error) => {
-                        setLoading(false)
-                        setError("Payment Handeler Error")
-                        console.log(error);
-                    },
-                    onClose: () => {
-                        setLoading(false)
-                        console.log('widget is closing');
-                    }
-                }
-            };
-            const checkout = new KhaltiCheckout(config);
-            // Show Khalti checkout modal
-            checkout.show({ amount: price * 100 }); // Pass calculated price to Khalti
-        } catch (error) {
-            setError(error.message || 'An error occurred during payment processing.');
-            setLoading(false);
-            console.error('Error processing payment:', error);
-            // Handle error, e.g., display an error message to the user
-        }
-    };
-
-    const calculatePrice = (startDateStr, endDateStr) => {
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
-        const durationInHours = (endDate - startDate) / (1000 * 60 * 60);
-        const pricePerHour = Venue.pricePerHour;
-        const calculatedValue = Math.ceil(durationInHours * pricePerHour);
-        return calculatedValue <= 0 ? 0 : calculatedValue;
-        
-
-    };
 
     return (
-        <><div className="flex flex-col lg:flex-row min-h-screen justify-center align-middle items-center p-2"
+        <>
+        <Navbar />
+        <div className="flex flex-col  lg:flex-row min-h-screen justify-center items-start pt-20 p-2"
             style={{
-                backgroundImage: 'url("https://source.unsplash.com/random/1600x900")',
+                backgroundImage: 'url("https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-            }}>
-            <div className="flex flex-col bg-white items-center lg:w-1/3 md:2/3 w-1/1 shadow-xl justify-center mx-auto  p-5 my-10 rounded-xl">
-                <div>
+            }}
+        >
+            {/* Left Column - List of Bookings */}
+            <section className="lg:w-1/2 p-5 mx-auto">
+                <div className="container bg-gray-100 rounded-lg shadow flex py-2">
+                    <div className="w-full mt-8 flex justify-center flex-col">
+                        <h2 className="text-xl mt-2 font-bold leading-tight tracking-tight text-orange-600 md:text-2xl dark:text-orange-600 text-center">Booked Bookings</h2>
+                        {Bookings && Bookings.length > 0 ? (
+                            <table className="w-full table-auto">
+                                <thead>
+                                    <tr>
+                                        <th className="px-4 py-2">S.N</th>
+                                        <th className="px-4 py-2">Start</th>
+                                        <th className="px-4 py-2">End</th>
+                                        <th className="px-4 py-2">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Bookings.map((booking, index) => (
+                                        <tr key={booking._id}>
+                                            <td className="border px-4 py-2">{index + 1}</td>
+                                            <td className="border px-4 py-2">{new Date(booking.startDate).toLocaleString()}</td>
+                                            <td className="border px-4 py-2">{new Date(booking.endDate).toLocaleString()}</td>
+                                            <td className="border px-4 py-2">{booking.status}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p className="text-gray-500 text-center p-2">No confirmed bookings yet.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* Right Column - Booking Form */}
+            <section className="lg:w-1/2  p-5">
+                <div className="bg-white shadow-xl rounded-xl p-5 ">
                     <h1 className="text-xl mt-2 font-bold leading-tight tracking-tight text-orange-600 md:text-2xl dark:text-orange-600 text-center">
                         Booking
                     </h1>
-                    <div className="mx-auto w-full max-w-[550px] ">
-                        <form onSubmit={handleBooking} method='POST'>
-                            <div className="mb-5">
-                                <label htmlFor="fullName" className="mb-3 block text-base font-medium text-[#07074D]">
-                                    Full Name
+                    <form onSubmit={handleBooking} method="POST" className="mx-auto w-full ">
+                        {/* Full Name Input */}
+                        <div className="mb-5">
+                            <label htmlFor="fullName" className="mb-3 block text-base font-medium text-[#07074D]">
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                id="fullName"
+                                required
+                                placeholder="Full Name"
+                                value={bookingData.fullName}
+                                onChange={handleInputChange}
+                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+                            />
+                        </div>
+                        {/* Phone Number Input */}
+                        <div className="mb-5">
+                            <label htmlFor="phoneNumber" className="mb-3 block text-base font-medium text-[#07074D]">
+                                Phone Number
+                            </label>
+                            <input
+                                type="text"
+                                name="phoneNumber"
+                                id="phoneNumber"
+                                required
+                                placeholder="Phone Number"
+                                value={bookingData.phoneNumber}
+                                onChange={handlephoneno}
+                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+                            />
+                        </div>
+                        {/* Email Address Input */}
+                        <div className="mb-5">
+                            <label htmlFor="email" className="mb-3 block text-base font-medium text-[#07074D]">
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                required
+                                placeholder="Email Address"
+                                value={bookingData.email}
+                                onChange={handleInputChange}
+                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+                            />
+                        </div>
+                        {/* Start Date Input */}
+                        <div className="-mx-3 flex flex-wrap mb-5">
+                            <div className="w-full px-3 sm:w-1/2">
+                                <label htmlFor="startDate" className="mb-3 block text-base font-medium text-[#07074D]">
+                                    Start Date
+                                    <br />
+                                    <small>Start date should be greater than today's date and time.</small>
                                 </label>
                                 <input
-                                    type="text"
-                                    name="fullName"
-                                    id="fullName"
+                                    type="datetime-local"
+                                    name="startDate"
+                                    id="startDate"
                                     required
-                                    placeholder="Full Name"
-                                    value={bookingData.fullName}
+                                    value={bookingData.startDate}
                                     onChange={handleInputChange}
                                     className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                                 />
                             </div>
-                            <div className="mb-5">
-                                <label htmlFor="phoneNumber" className="mb-3 block text-base font-medium text-[#07074D]">
-                                    Phone Number
+                            {/* End Date Input */}
+                            <div className="w-full px-3 sm:w-1/2">
+                                <label htmlFor="endDate" className="mb-3 block text-base font-medium text-[#07074D]">
+                                    End Date
+                                    <br />
+                                    <small>End date should be greater than start date.</small>
                                 </label>
                                 <input
-                                    type="text"
-                                    name="phoneNumber"
-                                    id="phoneNumber"
+                                    type="datetime-local"
+                                    name="endDate"
+                                    id="endDate"
                                     required
-                                    placeholder="Phone Number"
-                                    value={bookingData.phoneNumber}
+                                    value={bookingData.endDate}
                                     onChange={handleInputChange}
                                     className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
                                 />
                             </div>
-                            <div className="mb-5">
-                                <label htmlFor="email" className="mb-3 block text-base font-medium text-[#07074D]">
-                                    Email Address
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    required
-                                    placeholder="Email Address"
-                                    value={bookingData.email}
-                                    onChange={handleInputChange}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                                />
-                            </div>
-                            <div className="-mx-3 flex flex-wrap">
-                                <div className="w-full px-3 sm:w-1/2">
-                                    <div className="mb-5">
-                                        <label htmlFor="startDate" className="mb-3 block text-base font-medium text-[#07074D]">
-                                            Start Date<br />
-                                            <small>Start date should be greater than today 's date and current time.</small><br />
-                                        </label>
-                                        <input
-                                            type="datetime-local"
-                                            name="startDate"
-                                            id="startDate"
-                                            required
-                                            value={bookingData.startDate}
-                                            onChange={handleInputChange}
-                                            className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="w-full px-3 sm:w-1/2">
-                                    <div className="mb-5">
-                                        <label htmlFor="endDate" className="mb-3 block text-base font-medium text-[#07074D]">
-                                            End Date<br />
-                                            <small>End date should be greater than today 's date and current time and startDate.</small><br />
-                                        </label>
-                                        <input
-                                            type="datetime-local"
-                                            name="endDate"
-                                            id="endDate"
-                                            required
-                                            value={bookingData.endDate}
-                                            onChange={handleInputChange}
-                                            className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mb-5 ">
-                                <label htmlFor="paymentType" className="mb-3 block text-base font-medium text-[#07074D]">
-                                    Payment Type
-                                </label>
-                                <select
-                                    name="paymentType"
-                                    id="paymentType"
-                                    value={bookingData.paymentType}
-                                    onChange={handleInputChange}
-                                    className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                                >
-                                    <option value="khalti">Khalti</option>
-                                </select>
-                            </div>
-                            <div className="mb-5">
-                                <label htmlFor="price" className="mb-3 block text-base font-medium text-[#07074D]">
-                                    Total Price(Rs.)
-                                </label>
-                                <input
-                                    type="text"
-                                    id="price"
-                                    value={bookingData.price}
-                                    readOnly
-                                    className="w-full rounded-md border text-red-500 border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium outline-none"
-                                />
-                            </div>
-
-                            {error && <p className="text-red-500 mt-2">{error}</p>}
-                            {success && <p className="text-green-500 mt-2">Payment successful!</p>}
-                            <div>
-                                <button type="submit" className="hover:bg-orange-700 w-full rounded-md bg-orange-600 py-3 px-8 text-center text-base font-semibold text-white outline-none" disabled={loading}>
-                                    {loading ? 'Processing...' : 'Book Now!!!'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                        {/* Payment Type Input */}
+                        <div className="mb-5">
+                            <label htmlFor="paymentType" className="mb-3 block text-base font-medium text-[#07074D]">
+                                Payment Type
+                            </label>
+                            <select
+                                name="paymentType"
+                                id="paymentType"
+                                value={bookingData.paymentType}
+                                onChange={handleInputChange}
+                                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+                            >
+                                <option value="khalti">Khalti</option>
+                            </select>
+                        </div>
+                        {/* Total Price Display (ReadOnly) */}
+                        <div className="mb-5">
+                            <label htmlFor="price" className="mb-3 block text-base font-medium text-[#07074D]">
+                                Total Price (Rs.)
+                            </label>
+                            <input
+                                type="text"
+                                id="price"
+                                value={bookingData.price}
+                                readOnly
+                                className="w-full rounded-md border text-red-500 border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium outline-none"
+                            />
+                        </div>
+                        {/* Error or Success Messages */}
+                        {error && <p className="text-red-500 mt-2">{error}</p>}
+                        {success && <p className="text-green-500 mt-2">Payment successful!</p>}
+                        {/* Submit Button */}
+                        <div>
+                            <button type="submit" className="hover:bg-orange-700 w-full rounded-md bg-orange-600 py-3 px-8 text-center text-base font-semibold text-white outline-none" disabled={loading}>
+                                {loading ? 'Processing...' : 'Book Now!!!'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </div>
+            </section>
         </div>
-        </>
+        <Footer />
+    </>
     );
 }
 

@@ -5,12 +5,15 @@ import NewsLetter from "./Newesletter";
 import Testimonial from "./Testimonial";
 import FAQ from "./FAQ";
 import ImageSlider from "./FeaturedVenueList";
+import Stats from "./smallcomponents/Stats";
 
 const Hero = () => {
   return (
     <>
       {/* HERO SECTION */}
-      <section className="py-16 bg-gray-100 overflow-hidden"> {/* Ensure overflow is hidden */}
+      <section className="py-16 bg-gray-100 overflow-hidden">
+        {" "}
+        {/* Ensure overflow is hidden */}
         <div className="container mx-auto">
           <div className="flex flex-wrap p-5 items-center">
             <div className="lg:w-6/12 lg:pr-4">
@@ -25,31 +28,34 @@ const Hero = () => {
                   <span className="text-orange-600">victory</span>
                 </h1>
                 <p className="text-base text-gray-600 leading-6">
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Ullam ipsum nobis asperiores soluta voluptas quas voluptates.
-                  Molestiae tempora dignissimos, animi praesentium molestias
-                  perferendis porro expedita delectus. Soluta natus porro.
+                  Ready to take your passion for sports activities to the next
+                  stage? Join the KhelNepal community today and Elevate your
+                  sports activities passion with us. From scoring goals to
+                  hitting sixes, we assist your adventure. Make informed
+                  selections, seamless bookings, and unforgettable victories.
+                  Start empowering your passion with KhelNepal now.
                 </p>
               </div>
             </div>
 
-            <div className="lg:w-6/12 lg:mt-0 mt-8 lg:pl-4">
+            <div className="lg:w-6/12 lg:mt-0 pt-10 lg:pl-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="hero__img-box">
+                <div className="hero__img-box hover:scale-125 transition-all duration-100 hover:z-10">
                   <img
                     src="https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="football"
-                    className="w-full h-64 object-cover rounded-20 border-2 border-orange-700"
+                    className="w-full h-64 object-cover rounded-20 border-2  border-orange-700"
                   />
                 </div>
-                <div className="hero__img-box">
+                <div className="hero__img-box scale-110 hover:scale-125 scale transition-all duration-100">
                   <img
                     src="https://images.unsplash.com/photo-1593341646782-e0b495cff86d?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="cricket"
+                  
                     className="w-full h-64 object-cover rounded-20 border-2 border-orange-700"
                   />
                 </div>
-                <div className="hero__img-box">
+                <div className="hero__img-box hover:scale-125 transition-all duration-100">
                   <img
                     src="https://images.unsplash.com/photo-1540828999861-3a4ecd58d9c9?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="basketball"
@@ -65,7 +71,7 @@ const Hero = () => {
       </section>
 
       {/* SERVICES SECTION */}
-      <section>
+      <section className="bg-gray-200">
         <div className="container mx-auto">
           <div className="lg:flex-1 pt-5">
             <h3 className="text-2xl text-center font-bold text-orange-600">
@@ -83,9 +89,11 @@ const Hero = () => {
 
       {/* FEATURED VENUE SECTION */}
       <section>
-        <div className="container mx-auto p-8">
+        <div className="container mx-auto md:p-8 p-2">
           <div className="mb-8">
-            <h3 className="text-2xl font-bold text-orange-600 text-center">Explore</h3>
+            <h3 className="text-2xl font-bold text-orange-600 text-center">
+              Explore
+            </h3>
             <h2 className="featured__tour-title text-center">Recent Venues</h2>
           </div>
           <ImageSlider />
@@ -94,75 +102,49 @@ const Hero = () => {
 
       {/* EXPERIENCE SECTION */}
       <section>
-  <div className="mx-auto p-10 bg-gray-200">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-      {/* Left side content */}
-      <div className="space-y-4">
-        <h3 className="text-2xl text-orange-600 font-bold pl-20">
-          Experience
-        </h3>
-        <h2 className="text-4xl font-bold text-secondary-color pl-20">
-          With our all experience <br /> we will serve you
-        </h2>
-        <p className="text-lg text-gray-600 pl-20">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quas
-          aliquam, hic tempora inventore suscipit unde.
-        </p>
-        <div className="grid grid-cols-3 gap-5">
-          {/* Counter boxes */}
-          <div className="counter__box flex flex-col items-center">
-            <span className="w-16 h-16 flex items-center justify-center bg-primary-color text-white font-bold text-lg rounded-full">
-              12k+
-            </span>
-            <h6 className="text-sm text-gray-600 mt-1">Sports venue</h6>
-          </div>
+        <div className="mx-auto p-10 bg-gray-200">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            {/* Left side content */}
+            <div className="space-y-4">
+              <h3 className="text-2xl text-orange-600 font-bold md:pl-20">
+                Experience
+              </h3>
+              <h2 className="text-4xl font-bold text-secondary-color md:pl-20">
+                With our all experience <br /> we will serve you
+              </h2>
+              <p className="text-lg text-gray-600 md:pl-20">
+                Seamless sports venue booking. Discover a diverse selection of
+                venues, book effortlessly, and enjoy transparent pricing. Get
+                personalized recommendations and reliable customer support every
+                step of the way. Elevate your sports experience with us today!
+              </p>
+              <Stats />
 
-          <div className="counter__box flex flex-col items-center">
-            <span className="w-16 h-16 flex items-center justify-center bg-primary-color text-white font-bold text-lg rounded-full">
-              2k+
-            </span>
-            <h6 className="text-sm text-gray-600 mt-1">
-              Regular clients
-            </h6>
-          </div>
+              {/* Additional content */}
+              <div className="md:pl-20">
+                <p className="text-base text-gray-600">
+                  Additional content goes here. You can add more text, images,
+                  or other elements as needed.
+                </p>
+                <button className="bg-primary-color text-orange-600 font-bold py-2 px-4 rounded mt-4">
+                  Learn More
+                </button>
+              </div>
+            </div>
 
-          <div className="counter__box flex flex-col items-center">
-            <span className="w-16 h-16 flex items-center justify-center bg-primary-color text-white font-bold text-lg rounded-full">
-              5
-            </span>
-            <h6 className="text-sm text-gray-600 mt-1">
-              Year experience
-            </h6>
-          </div>
-          {/* Counter boxes end */}
-        </div>
-
-        {/* Additional content */}
-        <div className="pl-20">
-          <p className="text-base text-gray-600">
-            Additional content goes here. You can add more text, images, or
-            other elements as needed.
-          </p>
-          <button className="bg-primary-color text-orange-600 font-bold py-2 px-4 rounded mt-4">
-            Learn More
-          </button>
-        </div>
-      </div>
-
-      {/* Right side content */}
-      <div className="flex flex-col justify-between gap-8 items-start lg:items-end">
-        <div className="rounded-lg overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-            className="min-w-full object-fill pr-20 rounded"
-          />
-        </div>
-      </div>
-    </div>
+            <div className="flex flex-col justify-between gap-8 items-start lg:items-end">
+  <div className="rounded-lg overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      alt=""
+      className="object-fill w-full  rounded-lg" // Adjust height as needed
+    />
   </div>
-</section>
+</div>
 
+          </div>
+        </div>
+      </section>
 
       {/* FAQ SECTION */}
       <section>
@@ -181,7 +163,9 @@ const Hero = () => {
 
       {/* TESTIMONIAL SECTION */}
       <section>
-        <div className="mx-auto py-10 bg-gray-100 p-2"> {/* Removed the horizontal padding */}
+        <div className="mx-auto py-10 bg-gray-100 p-2">
+          {" "}
+          {/* Removed the horizontal padding */}
           <div className="mb-8">
             <h3 className="text-2xl text-center text-orange-600 font-bold">
               Testimonial

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { API } from '../../Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
+import { Link } from 'react-router-dom';
 export default function UsersEdit({ onMenuClick }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +78,7 @@ export default function UsersEdit({ onMenuClick }) {
                 <th className="border py-2 px-4">Profile</th>
                 <th className="border py-2 px-4">Name</th>
                 <th className="border py-2 px-4">Username</th>
-                <th className="border py-2 px-4">Email</th>
+     
                 <th className="border py-2 px-4">Actions</th>
               </tr>
             </thead>
@@ -89,8 +90,8 @@ export default function UsersEdit({ onMenuClick }) {
                     <img src={`${API}${user.profilePicture}`} alt="Profile" className="h-10 w-10 rounded-full mx-auto sm:mx-0" />
                   </td>
                   <td className="border py-2 px-4">{user.fullName}</td>
-                  <td className="border py-2 px-4">{user.username}</td>
-                  <td className="border py-2 px-4">{user.email}</td>
+                  <td className="border py-2 px-4"><Link to={`/profile/${user._id}`}>{user.username}</Link></td>
+
                   <td className="border py-2 px-4">
                     <div className="flex flex-col sm:flex-row justify-center">
                       <button

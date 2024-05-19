@@ -4,6 +4,7 @@ import 'react-multi-carousel/lib/styles.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API } from '../Data/baseIndex';
+import User from './smallcomponents/User';
 
 const Venue = () => {
   const [isMoving, setIsMoving] = useState(false);
@@ -53,7 +54,7 @@ const Venue = () => {
     beforeChange={() => setIsMoving(true)}
     afterChange={() => setIsMoving(false)}
     containerClass="carousel-container"
-    itemClass="carousel-item"
+    itemClass="carousel-item z-10"
 
     >
 
@@ -61,8 +62,11 @@ const Venue = () => {
           <div key={venue._id} className="max-w-xs bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden mx-2">
             <img className="w-full h-60 object-cover object-center" src={`${API}${venue.image}`} alt={venue.name} />
             <div className="p-5">
+            <Link to={`/profile/${venue.managedBy}`}> <User userid={venue.managedBy}/></Link>
+
               <h2 className="text-lg font-semibold text-gray-800 mb-2">{venue.name}</h2>
-              <p className="text-gray-600 mb-2">Price per hour: ${venue.pricePerHour}</p>
+              <small className='text-gray-800'>Capacity: {venue.capacity}</small>
+              <p className="text-orange-600 font-bold mb-2">Price: Rs.{venue.pricePerHour}/hr</p>
               <p className="text-gray-600 mb-4"><svg xmlns="http://www.w3.org/2000/svg" className='w-5 h-5 inline-block mr-3' viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>{venue.location} </p>
               <Link to={`/venues/${venue._id}`} className="px-3 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition duration-300">View Details</Link>
             </div>

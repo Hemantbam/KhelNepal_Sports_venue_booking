@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API } from '../../Data/baseIndex';
 import Cookies from 'js-cookie'; // Import the Cookies library
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const JoinRequest = ({ onMenuClick }) => {
     const [users, setUsers] = useState([]);
@@ -25,7 +25,7 @@ const JoinRequest = ({ onMenuClick }) => {
         };
     
         fetchUsers();
-    }, []);
+    }, [1000]);
 
     const handleViewProfile = (userId) => {
         // Set the user ID in a cookie
@@ -46,7 +46,7 @@ const JoinRequest = ({ onMenuClick }) => {
                             <tr>
                                 <th className="border py-2 px-4">S.N</th>
                                 <th className="border py-2 px-4">Name</th>
-                                <th className="border py-2 px-4">Email</th>
+                                <th className="border py-2 px-4">Username</th>
                                 <th className="border py-2 px-4">Actions</th>
                             </tr>
                         </thead>
@@ -55,7 +55,7 @@ const JoinRequest = ({ onMenuClick }) => {
                                 <tr key={user._id}>
                                     <td className="border py-2 px-4">{index + 1}.</td>
                                     <td className="border py-2 px-4">{user.fullName}</td>
-                                    <td className="border py-2 px-4">{user.email}</td>
+                                    <td className="border py-2 px-4"><Link to={`/profile/${user._id}`}>{user.username}</Link></td>
                                     <td className="border py-2 px-4">
                                         <button
                                             className="bg-orange-600 text-white px-3 py-1 rounded mr-2 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-600"

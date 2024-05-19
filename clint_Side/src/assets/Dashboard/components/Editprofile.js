@@ -23,12 +23,12 @@ function jsonToFormData(data) {
 }
 
 export default function EditProfile() {
-
+  const [readonly, setReadonly] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [isBasicUser, setIsBasicUser] = useState(false);
-  const [IsVenue, setIsVenue] = useState();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isBasicUser, setIsBasicUser] = useState(jwtDecode(localStorage.getItem('token')).role == 'basic');
+  const [IsVenue, setIsVenue] = useState(jwtDecode(localStorage.getItem('token')).role == 'venue');
+  const [isAdmin, setIsAdmin] = useState(jwtDecode(localStorage.getItem('token')).role == 'admin');
   const [decoded] = useState(jwtDecode(localStorage.getItem('token')));
   const userId = Cookies.get('selectedUserId') || decoded.id;
   console.log(userId);
@@ -39,7 +39,8 @@ export default function EditProfile() {
     PAN: '',
     phoneNumber: '',
     venuereq: false,
-    isrejected:false,
+    isrejected: false,
+    panimage: '',
     address: {
       street: '',
       city: '',
@@ -55,6 +56,7 @@ export default function EditProfile() {
     profilePicture: '',
     role: '',
   });
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -67,7 +69,7 @@ export default function EditProfile() {
 
         const decodedToken = jwtDecode(token);
 
-
+console.log(userId==decodedToken.id);
         if (decodedToken.id === userId) {
           switch (decodedToken.role) {
             case 'basic':
@@ -100,7 +102,7 @@ export default function EditProfile() {
             default:
               break;
           }
-        } else {
+        } else if(decodedToken.id!=userId&&!isBasicUser) {
           const response = await axios.get(`${API}api/auth/user?id=${userId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -120,7 +122,17 @@ export default function EditProfile() {
     fetchData();
   }, [userId]);
 
-
+  const handlephoneno=(e)=>{
+    const value=e.target.value;
+    if (value.length!=10) {
+     setError("Phone no. must have 10 Numbers...");
+     return;
+    }
+    setUser((prevUser)=>({
+     ...prevUser,
+     phoneNumber:value
+    }))
+   }
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -158,9 +170,27 @@ export default function EditProfile() {
       }));
     }
   };
-
+  const handlePanImageChange = (e) => {
+    const file = e.target.files[0];
+    setUser({
+      ...user,
+      panimage: file, // Update panimage in state
+    });
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!isBasicUser){
+      if (!user || !user.fullName || user.fullName.trim().length === 0) {
+        setError("Full Name must be provided.");
+        setTimeout(() => {
+          setError("");
+        }, 1000);
+        return;
+      }
+    }
+    setError(null);
+    setSuccess(null);
+    console.log("Submitted:");
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -168,30 +198,33 @@ export default function EditProfile() {
         setSuccess(null);
         return;
       }
-  
+
       // Ensure that user is not null or undefined before processing
       if (!user) {
         setError('User data is missing.');
         setSuccess(null);
         return;
       }
-  
+
       // Set venuereq to false
       user.venuereq = false;
-  
+
       const formData = jsonToFormData(user); // Convert user object to FormData
-  
+
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       };
-  
+
       const updateResponse = await axios.put(`${API}api/auth/update?id=${userId}`, formData, config);
       setSuccess(updateResponse.data.message);
+    setTimeout(() => {
+      Cookies.remove("selectedUserId")
       window.location.href = '/dashboard';
       setError(null);
+    }, 500);
     } catch (error) {
       console.error('Error updating profile:', error);
       if (error.response && error.response.data) {
@@ -202,11 +235,11 @@ export default function EditProfile() {
       setSuccess(null);
     }
   };
-  
 
-  const handleButtonClick = () => {
-    setError(null);
-    setSuccess(null);
+
+ 
+  const handleToggleReadonly = () => {
+    setReadonly(!readonly); // Toggle read-only mode
   };
   return (
     <section className="min-h-screen py-10 bg-gray-50 dark:bg-gray-200 flex justify-center bg-cover items-center">
@@ -214,7 +247,35 @@ export default function EditProfile() {
         <h1 className="text-2xl font-bold text-orange-600 dark:text-orange-600 text-center mb-6">
           Edit Profile
         </h1>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+    
+        <form className="space-y-6" onSubmit={handleSubmit} >
+
+        <div className="flex items-center justify-between mb-4">
+            <label htmlFor="readonly" className="text-sm font-medium text-gray-900 dark:text-gray-300">
+              Read Only Mode
+            </label>
+            <div className="relative">
+              <input
+                type="checkbox"
+                id="readonly"
+                checked={readonly}
+                onChange={handleToggleReadonly}
+                className="sr-only"
+              />
+              <div
+                className={`${
+                  !readonly ? 'bg-gray-400' : 'bg-green-500'
+                } w-12 h-6 rounded-full cursor-pointer relative transition-colors duration-300`}
+                onClick={handleToggleReadonly}
+              >
+                <div
+                  className={`${
+                    !readonly ? 'translate-x-0' : 'translate-x-6'
+                  } w-6 h-6 rounded-full bg-white shadow-md absolute top-0 left-0 transition-transform duration-300 ease-in-out`}
+                />
+              </div>
+            </div>
+          </div>
           {/* Profile Picture */}
 
           <div>
@@ -229,14 +290,15 @@ export default function EditProfile() {
               className="hidden"
               accept="image/*"
               onChange={handleImageChange}
+              disabled={readonly}
             />
 
             <label htmlFor="image" className="w-60 mx-auto flex items-center justify-center h-60  cursor-pointer border bottom-2 border-gray-400 rounded-full p-2 text-center">
               {user.profile || user.profilePicture ? (
                 <img
                   src={user.profilePicture instanceof File ? URL.createObjectURL(user.profilePicture) : `${API}${isBasicUser ? user.profile : user.profilePicture}`}
-                  alt="Selected Image"
-                  className="max-h-60 min-h-60 min-w-60  object-cover rounded-full max-w-60 bg-cover mx-auto "
+                  alt="Selected Image Not Loaded"
+                  className="max-h-60 min-h-60 min-w-60 object-cover rounded-full max-w-60 bg-cover mx-auto leading-5 text-center "
 
                 />
               ) : (
@@ -255,9 +317,11 @@ export default function EditProfile() {
               type="text"
               name="username"
               id="username"
+              required
               value={user.username}
               onChange={handleChange}
               className="w-full rounded-md border border-gray-400 p-2 text-sm"
+              disabled={true}
             />
           </div>
           {/* Full Name */}
@@ -270,8 +334,10 @@ export default function EditProfile() {
                 type="text"
                 name="fullName"
                 id="fullName"
+                required
                 value={user.fullName}
                 onChange={handleChange}
+                disabled={readonly}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
               />
             </div>
@@ -287,6 +353,8 @@ export default function EditProfile() {
               name="email"
               id="email"
               value={user.email}
+              required
+              disabled={true}
               onChange={handleChange}
               className="w-full rounded-md border border-gray-400 p-2 text-sm"
             />
@@ -294,6 +362,7 @@ export default function EditProfile() {
 
           {/* PAN */}
           {!isBasicUser && (
+            <>
             <div>
               <label htmlFor="PAN" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
                 PAN
@@ -303,10 +372,44 @@ export default function EditProfile() {
                 name="PAN"
                 id="PAN"
                 value={user.PAN}
+                required
+                disabled={readonly}
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
               />
             </div>
+          
+
+          <div>
+            <label htmlFor="panimage" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+              Pan Image:
+              <br />
+              <small>Click on image to select Pan Image.
+              {/* <span className='text-red-500'>You cannot change Afterward..</span> */}
+              </small>
+            </label>
+            <input
+              type="file"
+              id="panimage"
+              className="hidden"
+              accept="image/*"
+              disabled={readonly}
+       
+              onChange={handlePanImageChange}
+            />
+            <label htmlFor="panimage" className="w-56 h-32 mx-auto flex items-center justify-center cursor-pointer border bottom-2 border-gray-400 p-2 text-center">
+              {user.panimage ? (
+                <img
+                  src={user.panimage instanceof File ? URL.createObjectURL(user.panimage) : `${API}${isBasicUser ? user.panimage : user.panimage}`}
+                  alt="Selected Image"
+                  className="w-56 h-32 object-cover bg-contain mx-auto"
+                />
+              ) : (
+                <span>Select Image</span>
+              )}
+            </label>
+          </div>
+          </>
           )}
           {/* Phone Number */}
           {!isBasicUser && (
@@ -318,8 +421,10 @@ export default function EditProfile() {
                 type="text"
                 name="phoneNumber"
                 id="phoneNumber"
+                required
+                disabled={readonly}
                 value={user.phoneNumber}
-                onChange={handleChange}
+                onChange={handlephoneno}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
               />
             </div>
@@ -335,6 +440,8 @@ export default function EditProfile() {
                   type="text"
                   name="address.street"
                   id="street"
+                  required
+                  disabled={readonly}
                   value={user?.address?.street || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -348,6 +455,8 @@ export default function EditProfile() {
                   type="text"
                   name="address.city"
                   id="city"
+                  required
+                  disabled={readonly}
                   value={user?.address?.city || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -361,6 +470,8 @@ export default function EditProfile() {
                   type="text"
                   name="address.state"
                   id="state"
+                  required
+                  disabled={readonly}
                   value={user?.address?.state || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -374,6 +485,8 @@ export default function EditProfile() {
                   type="text"
                   name="address.postalCode"
                   id="postalCode"
+                  required
+                  disabled={readonly}
                   value={user?.address?.postalCode || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -387,6 +500,8 @@ export default function EditProfile() {
                   type="text"
                   name="address.country"
                   id="country"
+                  required
+                  disabled={readonly}
                   value={user?.address?.country || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -404,6 +519,8 @@ export default function EditProfile() {
                 type="text"
                 name="businessDetails.businessName"
                 id="businessName"
+                disabled={readonly}
+                required
                 value={user?.businessDetails?.businessName || ''}
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -419,6 +536,8 @@ export default function EditProfile() {
                 type="text"
                 name="businessDetails.registrationNumber"
                 id="registrationNumber"
+                disabled={readonly}
+                required
                 value={user?.businessDetails?.registrationNumber || ''}
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -434,6 +553,8 @@ export default function EditProfile() {
                 type="text"
                 name="businessDetails.taxIdentificationNumber"
                 id="taxIdentificationNumber"
+                disabled={readonly}
+                required
                 value={user?.businessDetails?.taxIdentificationNumber || ''}
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -442,46 +563,48 @@ export default function EditProfile() {
           )}
 
 
-        
-{isAdmin && (
-  /* Render fields editable by admin only */
-  <>
-    {/* Role - Only visible for admins */}
-    <div>
-      <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-        Role
-      </label>
-      <select
-        id="role"
-        name="role"
-        value={user.role}
-        onChange={handleChange}
-        className="w-full rounded-md border border-gray-400 p-2 text-sm"
-      >
-        <option value="basic">Basic</option>
-        <option value="venue">Venue</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    {/* isRejected - Only visible for admins */}
-    <div>
-      <label htmlFor="isRejected" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-        Rejected
-      </label>
-      <select
-        id="isRejected"
-        name="isRejected"
-        value={user.isrejected}
-        onChange={handleChange}
-        className="w-full rounded-md border border-gray-400 p-2 text-sm"
-      >
-        <option value={true}>Yes</option>
-        <option value={false}>No</option>
-      </select>
-    </div>
-   
-  </>
-)}
+
+          {isAdmin && (
+            /* Render fields editable by admin only */
+            <>
+              {/* Role - Only visible for admins */}
+              <div>
+                <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+                  Role
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={user.role}
+                  disabled={readonly}
+                  onChange={handleChange}
+                  className="w-full rounded-md border border-gray-400 p-2 text-sm"
+                >
+                  <option value="basic">Basic</option>
+                  <option value="venue">Venue</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              {/* isRejected - Only visible for admins */}
+              <div>
+                <label htmlFor="isRejected" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+                  Rejected
+                </label>
+                <select
+                  id="isRejected"
+                  name="isRejected"
+                  disabled={readonly}
+                  value={user.isrejected}
+                  onChange={handleChange}
+                  className="w-full rounded-md border border-gray-400 p-2 text-sm"
+                >
+                  <option value={true}>Yes</option>
+                  <option value={false}>No</option>
+                </select>
+              </div>
+
+            </>
+          )}
 
           {/* Error message */}
           {error && (
@@ -495,7 +618,6 @@ export default function EditProfile() {
           <button
             type="submit"
             className="w-full bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-            onClick={handleButtonClick}
           >
             Update Profile
           </button>

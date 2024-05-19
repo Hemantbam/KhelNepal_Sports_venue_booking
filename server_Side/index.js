@@ -10,6 +10,7 @@ const venueroute = require("./Route/venueroute.js");
 const bookingroute = require("./Route/bookingroute.js");
 const reviewroute = require("./Route/ReviewRoute.js");
 const paymentroute = require("./Route/paymentroute.js");
+const friendroute = require("./Route/friendroute.js");
 const Subscribe = require('./model/subscription.js'); 
 const path = require('path');
 const Contact = require("./model/contact.js");
@@ -27,6 +28,7 @@ app.use("/api/", venueroute);
 app.use("/api/", bookingroute);
 app.use('/api', paymentroute);
 app.use('/api', reviewroute);
+app.use('/api/', friendroute);
 // Connecting to the database
 connectDB();
 
@@ -52,7 +54,7 @@ app.get("/api/allusers", getUsers);
 // Serve static files
 app.use('/uploads/profile/', express.static(path.join(__dirname, 'uploads/profile')));
 app.use('/uploads/venues/', express.static(path.join(__dirname, 'uploads/venues')));
-
+app.use('/uploads/panimage/', express.static(path.join(__dirname, 'uploads/panimage')));
 
 
 

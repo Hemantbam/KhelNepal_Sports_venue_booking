@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API } from '../../Data/baseIndex';
 import { jwtDecode } from 'jwt-decode';
 import VenueName from './venuename';
+import { Link } from 'react-router-dom';
 
 export default function BookingsList({ onMenuClick }) {
     const [bookings, setBookings] = useState([]);
@@ -39,6 +40,7 @@ export default function BookingsList({ onMenuClick }) {
             }
 
             setBookings(bookingsData);
+            
             setLoading(false);
             setError(null);
         } catch (error) {
@@ -70,9 +72,10 @@ export default function BookingsList({ onMenuClick }) {
     };
 
     const handleCancelBooking = async (bookingId) => {
+       let why= prompt("Please give reason for cancellation.", "Not available at that time");
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(`${API}api/bookings?id=${bookingId}`, { status: 'cancelled' }, {
+            const response = await axios.put(`${API}api/bookings?id=${bookingId}`, { status: 'cancelled',reason:why }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -123,7 +126,7 @@ export default function BookingsList({ onMenuClick }) {
                                     </td>
                                     <td className="border py-2 px-4">{new Date(booking.startDate).toLocaleString()}</td>
                                     <td className="border py-2 px-4">{new Date(booking.endDate).toLocaleString()}</td>
-                                    <td className="border py-2 px-4">{booking.fullName || "Not Given"}</td>
+                                    <td className="border py-2 px-4 text-orange-600"><Link to={`/profile/${booking.user}`}>{booking.fullName}</Link></td>
                                     <td className="border py-2 px-4">{booking.phoneNumber || "-"}</td>
                                     <td className="border py-2 px-4">{'Rs.' + booking.price || "-"}</td>
                                     <td className="border py-2 px-4">

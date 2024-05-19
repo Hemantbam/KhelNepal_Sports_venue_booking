@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 
 export const API = "http://localhost:5000/"; //Backend_Address
 
-
+export const khaltiPublic="test_public_key_fb7335816eb647d4a748906c9c993d82";
 export const Check = async () => {
 
     try {

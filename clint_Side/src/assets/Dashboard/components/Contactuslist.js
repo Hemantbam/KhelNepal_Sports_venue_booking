@@ -63,8 +63,8 @@ export default function ContactList() {
                 <tr key={contact._id} className="bg-red-100">
                   <td className="border py-2 px-4">{index + 1}.</td>
                   <td className="border py-2 px-4">{contact.email}</td>
-                  <td className="border py-2 px-4">{contact.subject}</td>
-                  <td className="border py-2 px-4">{contact.message}</td>
+                  <td className="border py-2 px-4"><p>{contact.subject}</p></td>
+                  <td className="border py-2 px-4 "><p>{contact.message}</p></td>
                   <td className="border py-2 px-4">
                     <button
                       className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -80,8 +80,8 @@ export default function ContactList() {
                 <tr key={contact._id} className="bg-white">
                   <td className="border py-2 px-4">{index + 1 + unreachedContacts.length}.</td>
                   <td className="border py-2 px-4">{contact.email}</td>
-                  <td className="border py-2 px-4">{contact.subject}</td>
-                  <td className="border py-2 px-4">{contact.message}</td>
+                  <td className="border py-2 px-4"><p>{contact.subject}</p></td>
+                  <td className="border py-2 px-4"><p>{contact.message}</p></td>
                   <td className="border py-2 px-4">
                     <button
                       className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"

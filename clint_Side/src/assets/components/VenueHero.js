@@ -6,7 +6,6 @@ const VenueHero = ({ onSearch, onSort }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent'); // Default sorting option
-  const [sortOrder, setSortOrder] = useState('asc'); // Default sort order
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -23,13 +22,7 @@ const VenueHero = ({ onSearch, onSort }) => {
   const handleSortChange = (e) => {
     const selectedSortBy = e.target.value;
     setSortBy(selectedSortBy);
-    onSort(selectedSortBy, sortOrder); // Pass the selected sorting option and sort order to the parent component
-  };
-
-  const handleSortOrderChange = (e) => {
-    const selectedSortOrder = e.target.value;
-    setSortOrder(selectedSortOrder);
-    onSort(sortBy, selectedSortOrder); // Pass the selected sort order and sorting option to the parent component
+    onSort(selectedSortBy); // Pass the selected sorting option to the parent component
   };
 
   return (
@@ -47,35 +40,30 @@ const VenueHero = ({ onSearch, onSort }) => {
               type="text"
               placeholder="Search venues..."
               className="text-gray-800 font-bold border border-gray-400 rounded-l-lg p-2 mb-2 lg:mb-0"
-              value={searchQuery} 
+              value={searchQuery}
               onChange={handleSearchChange}
             />
             <input
               type="text"
               placeholder="Search by location..."
               className="text-gray-800 font-bold border border-gray-400 rounded-r-lg p-2"
-              value={locationQuery} 
+              value={locationQuery}
               onChange={handleLocationChange}
             />
           </div>
           <div className="flex flex-row w-full mx-auto justify-center items-start flex-wrap lg:ml-4 mt-2">
             <select
-              className="text-gray-800 font-bold border border-gray-400 rounded-l-lg p-2 mb-2 lg:mb-0"
+              className="text-gray-800 font-bold border border-gray-400 rounded-lg p-2"
               value={sortBy}
               onChange={handleSortChange}
             >
-              <option value="recent">Sort By Recent</option>
-              <option value="updatedRecent">Sort By Updated Recent</option>
-              <option value="capacity">Sort By Capacity</option>
-              <option value="pricePerHour">Sort By Price Per Hour</option>
-            </select>
-            <select
-              className="text-gray-800 font-bold border border-gray-400 rounded-r-lg p-2"
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+
+              <option value="oldest">Oldest</option>
+              <option value="newest">Newest</option>
+              <option value="lowestCapacity">Capacity (Low to High)</option>
+              <option value="highestCapacity">Capacity (High to Low)</option>
+              <option value="lowestPrice">Price Per Hour (Low to High)</option>
+              <option value="highestPrice">Price Per Hour (High to Low)</option>
             </select>
           </div>
         </div>

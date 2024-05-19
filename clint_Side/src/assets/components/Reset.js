@@ -87,7 +87,7 @@ const navigate =useNavigate();
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Enter your new password"
-                  required=""
+                  required
                 />
               </div>
               <div>
@@ -105,7 +105,7 @@ const navigate =useNavigate();
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Confirm your new password"
-                  required=""
+                  required
                 />
               </div>
               {error && <div className="text-red-500 text-sm font-bold">{error}</div>}

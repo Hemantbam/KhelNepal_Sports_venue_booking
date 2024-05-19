@@ -5,11 +5,11 @@ import { API } from "../../Data/baseIndex";
 
 const Comment = ({ userID, venueID }) => {
     const [rating, setRating] = useState(0);
-    const [comment, setComment] = useState("");
+    const [comment, setComment] = useState("Amazing...");
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+console.log(userID, venueID);
     // Simulate checking if user is logged in (using useEffect with a mock implementation)
     useEffect(() => {
         // Here you can implement your logic to check if the user is logged in
@@ -22,18 +22,23 @@ const Comment = ({ userID, venueID }) => {
     };
 
     const submitReview = async () => {
+        if(userID==null){
+            alert("First Login");
+            return;
+        }
         try {
             if (!isLoggedIn) {
                 setErrorMessage("Please log in to leave a comment.");
                 return;
             }
+          
             // Send a POST request to your backend endpoint to create the review
             const token = localStorage.getItem("token");
             const response = await axios.post(`${API}api/reviews`, {
                 userId: userID,
                 venueId: venueID,
                 rating: rating,
-                comment: comment
+                comment: comment||"WoW"
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -61,10 +66,10 @@ const Comment = ({ userID, venueID }) => {
     };
 
     return (
-        <div className=" mx-auto bg-gray-100 rounded-xl shadow-xl overflow-hidden mt-2">
+        <div className=" mx-auto bg-gray-100 rounded-xl shadow-xl  mt-2">
             <div className="p-6">
                 <h2 className="text-2xl font-bold mb-4">Leave a Comment</h2>
-                <div className="flex items-center mb-6 align-middle">
+                <div className="flex items-center mb-6 align-middle ">
                     <span className="mr-2 text-lg">Rating:</span>
                     <ReactStars
                         count={5}

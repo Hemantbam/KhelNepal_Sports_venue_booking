@@ -13,15 +13,16 @@ export default function Testimonial() {
               style={{ boxShadow: "0 10px 28px rgba(0,0,0,.08)" }}
             >
               <p className="text-xl font-semibold">
-                Lorem ipsum dolor sit amet, consectetur adipiscing
+                Booking sports venues has never been easier!
               </p>
               <p className="mt-6">
-                Eu lobortis elementum nibh tellus molestie nunc non blandit
-                massa. Sit amet consectetur adipiscing elit duis.
+                With KhelNepal, I can quickly find and reserve the perfect venue
+                for my soccer games. The transparent pricing and excellent
+                customer support make the entire experience hassle-free.
               </p>
               <div className="flex items-center mt-8">
                 <img
-                  className="w-12 h-12 mr-4 rounded-full"
+                  className="w-12 h-12 object-cover mr-4 rounded-full"
                   src={ava01}
                   alt="Jane Doe"
                 />
@@ -37,15 +38,17 @@ export default function Testimonial() {
               style={{ boxShadow: "0 10px 28px rgba(0,0,0,.08)" }}
             >
               <p className="text-xl font-semibold">
-                Lorem ipsum dolor sit amet, consectetur adipiscing
+                I recently organized a corporate sports event
               </p>
               <p className="mt-6">
-                Eu lobortis elementum nibh tellus molestie nunc non blandit
-                massa. Sit amet consectetur adipiscing elit duis.
+                KhelNepal made the entire process seamless. The team was
+                responsive to all my inquiries, and the venue recommendation
+                feature helped us find the perfect location. Can't thank them
+                enough
               </p>
               <div className="flex items-center mt-8">
                 <img
-                  className="w-12 h-12 mr-4 rounded-full"
+                  className="w-12 h-12 object-cover  mr-4 rounded-full"
                   src={ava02}
                   alt="John Doe"
                 />
@@ -61,20 +64,22 @@ export default function Testimonial() {
               style={{ boxShadow: "0 10px 28px rgba(0,0,0,.08)" }}
             >
               <p className="text-xl font-semibold">
-                Lorem ipsum dolor sit amet, consectetur adipiscing
+                As a coach, finding the right venue for my team's practices is
+                crucial.
               </p>
               <p className="mt-6">
-                Eu lobortis elementum nibh tellus molestie nunc non blandit
-                massa. Sit amet consectetur adipiscing elit duis.
+                Thanks to KhelNepal, I can easily search for available
+                facilities and book them on the spot. It's a game-changer for
+                our training sessions!
               </p>
               <div className="flex items-center mt-8">
                 <img
-                  className="w-12 h-12 mr-4 rounded-full"
+                  className="w-12 h-12 object-cover mr-4 rounded-full"
                   src={ava03}
                   alt="Jane Smith"
                 />
                 <div>
-                  <p>Jane Smith</p>
+                  <p>Coach Mike</p>
                 </div>
               </div>
             </div>

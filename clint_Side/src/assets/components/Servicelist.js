@@ -9,17 +9,17 @@ const servicesData = [
   {
     imgUrl: weatherImg,
     title: `Best venu`,
-    desc: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.`,
+    desc: `Find the perfect venue, book effortlessly with KhelNepal.`,
   },
   {
     imgUrl: guideImg,
     title: `User -friendly`,
-    desc: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.`,
+    desc: `Unlock Seamless Experiences with KhelNepal's User-Friendly Solutions.`,
   },
   {
     imgUrl: customizationImg,
     title: "Customer support",
-    desc: `Lorem ipsum dolor sit amet, consectetur adipisicing elit.`,
+    desc: `Reliable Assistance with KhelNepal's Support Team.`,
   },
 ];
 

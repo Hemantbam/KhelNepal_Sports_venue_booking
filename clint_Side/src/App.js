@@ -1,10 +1,15 @@
 import React from 'react'
 import Router from './Router/router'
 
+
+
 const App = () => {
-  return (
+
+  return (<>
     <Router/>
+
+    </>
   )
 }
 
-export default App
+export default App;

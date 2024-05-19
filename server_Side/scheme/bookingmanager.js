@@ -1,11 +1,15 @@
 const Booking = require('../model/booking');
 const Payment = require('../model/payment');
 const Venue = require('../model/venue');
+const User = require('../model/user');
 // Function to create a new booking
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const { jwtSecret } = require('../Datas');
-function createBooking(req, res) {
+const nodemailer=require('nodemailer');
+const { jwtSecret, Useremail, mailOptions,khaltisecret } = require('../Datas');
+const transporter = nodemailer.createTransport(mailOptions);
+
+const createBooking =async(req, res) => {
     const { bookingData, token, khaltiData } = req.body;
 
     // Decode the JWT token to extract user information
@@ -26,10 +30,12 @@ function createBooking(req, res) {
         ...bookingData,
         user: userId // Add user ID to the booking data
     };
-
+const venue=await Venue.findById(khaltiData.product_identity);
+console.log(khaltiData.product_identity);
+console.log(venue.managedBy);
     // Verify the payment with Khalti's API and create the booking
     let config = {
-        headers: { 'Authorization': 'Key test_secret_key_9571ebc81db14cb4be5154e43371036a' }
+        headers: { 'Authorization': khaltisecret }
     };
 
     axios.post("https://khalti.com/api/v2/payment/verify/", khaltiData, config)
@@ -50,6 +56,7 @@ function createBooking(req, res) {
                         })
                             .then(newPayment => {
                                 res.status(200).json({ message: "Payment Verified and Booking created successfully", booking: newBooking, payment: newPayment });
+                                sendMailtomanager(venue.managedBy);
                             })
                             .catch(error => {
                                 console.error(`Error creating payment entry: ${error.message}`);
@@ -70,6 +77,38 @@ function createBooking(req, res) {
             return res.status(500).json({ message: `Error verifying payment: ${error.message}` });
         });
 }
+
+
+//Send Mail to seller
+const sendMailtomanager = async (managerId) => {
+    try {
+        // Retrieve manager's email address using managerId
+        const manager = await User.findById(managerId);
+        console.log(manager);
+console.log(manager.fullName);
+        if (!manager || !manager.email) {
+            console.log("Manager not found or missing email address");
+            return; // Return early if manager not found or missing email
+        }
+        const mailOptions = {
+            from: Useremail,
+            to: manager.email,
+            subject: 'New Booking Notification',
+            html: `<p>Hello ${manager.fullName},</p>
+                   <p>A new booking has been made:</p>`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log("Error sending booking notification email:", error);
+            } else {
+                console.log("Booking notification email sent successfully:", info.response);
+            }
+        });
+    } catch (error) {
+        console.error("Error sending booking notification email:", error);
+    }
+};
 // Function to retrieve all bookings with optional filtering
 async function getBookings(filter = {}) {
     try {
@@ -126,9 +165,12 @@ async function updateBooking(req, res) {
             (decodedToken.id === booking.user.toString() )
         ) {
             // Update the booking
-            const updatedBooking = await Booking.findByIdAndUpdate(req.query.id, {status:req.body.status}, { new: true });
+            const updatedBooking = await Booking.findByIdAndUpdate(req.query.id, {status:req.body.status,reason:req.body.reason}, { new: true });
             if (!updatedBooking) {
                 throw new Error('Booking not found');
+            }else{
+              if(updatedBooking.status=='confirmed'||updatedBooking.status=='cancelled'){
+                sendMailtobooker(updatedBooking.user,updatedBooking.status,updatedBooking.reason);}
             }
             return updatedBooking;
         } else {
@@ -140,6 +182,44 @@ async function updateBooking(req, res) {
         throw new Error(`Error updating booking: ${error.message}`);
     }
 }
+
+
+//Send Mail to seller
+const sendMailtobooker = async (managerId,status,reason) => {
+    try {
+        // Retrieve manager's email address using managerId
+        const manager = await User.findById(managerId);
+
+        if (!manager || !manager.email) {
+            console.log("Manager not found or missing email address");
+            return; // Return early if manager not found or missing email
+        }
+        console.log(manager);
+      
+            const mailOptions = {
+                from: Useremail,
+                to: manager.email,
+                subject: 'Booking Status',
+                html: `<p>Hello ${manager.fullName==null?"User":manager.fullName},</p>
+                       <p>Your booking Has been ${status} ${status=="cancelled"?`Reason:${reason}`:""}:</p>`
+            };
+    
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log("Error sending booking notification email:", error);
+                } else {
+                    console.log("Booking notification email sent successfully:", info.response);
+                }
+            });
+      
+
+   
+
+        
+    } catch (error) {
+        console.error("Error sending booking notification email:", error);
+    }
+};
 
 // Function to delete a booking by ID
 async function deleteBooking(bookingId, token) {

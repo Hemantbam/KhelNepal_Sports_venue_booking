@@ -7,7 +7,7 @@ export default function Venuelist({ venues }) {
   return (
     <div className="min-h-screen bg-gray-200">
       <div className="max-w-7xl mx-auto py-7 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-6xl mt-16 font-bold text-center text-orange-600">
+        <h1 className="text-4xl mt-16 font-bold text-center text-orange-600">
           Venue List
         </h1>
       </div>
@@ -19,7 +19,7 @@ export default function Venuelist({ venues }) {
               <div className="max-w-lg bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
                 <img className="w-full h-44 sm:h-44 object-cover object-center" src={`${API}${res.image}`} alt='Venue' />
                 <div className="p-5">
-                  <User userid={res.managedBy} />
+                <Link to={`/profile/${res.managedBy}`}> <User userid={res.managedBy}/></Link>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2 mt-2 overflow-hidden line-clamp-3 h-14">{res.name}</h2>
                   <p className="text-gray-600 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className='w-5 h-5 inline-block mr-3' viewBox="0 0 384 512">

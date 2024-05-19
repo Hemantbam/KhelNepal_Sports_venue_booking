@@ -107,31 +107,31 @@ export default function EditVenue() {
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="name">Name</label>
                         <input
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            type="text" name="name" value={formData.name} onChange={handleChange} />
+                            type="text" name="name" required value={formData.name} onChange={handleChange} />
                     </div>
                     <div>
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="location">Location</label>
                         <input
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            type="text" name="location" value={formData.location} onChange={handleChange} />
+                            type="text" required name="location" value={formData.location} onChange={handleChange} />
                     </div>
                     <div>
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="pricePerHour">Price Per Hour</label>
                         <input
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            type="number" name="pricePerHour" value={formData.pricePerHour} onChange={handleChange} />
+                            type="number" required name="pricePerHour" value={formData.pricePerHour} onChange={handleChange} />
                     </div>
                     <div>
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="description">Description</label>
                         <textarea
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            name="description" value={formData.description} onChange={handleChange}></textarea>
+                            name="description" required value={formData.description} onChange={handleChange}></textarea>
                     </div>
                     <div>
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="capacity">Capacity</label>
                         <input
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            type="number" name="capacity" value={formData.capacity} onChange={handleChange} />
+                            type="number" required name="capacity" value={formData.capacity} onChange={handleChange} />
                     </div>
                     <div>
                     <label className="block text-gray-700 font-bold mb-2" htmlFor="capacity">Facilities</label>
@@ -140,6 +140,7 @@ export default function EditVenue() {
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
                             type="text"
                             name="facilities"
+                            required
                             value={formData.facilities ? formData.facilities.join(',') : ''}
                             onChange={handleChange}
                         />
@@ -148,7 +149,7 @@ export default function EditVenue() {
                         <label className="block text-gray-700 font-bold mb-2" htmlFor="image">Image</label>
                         <input
                             className="border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-orange-500"
-                            type="file" name="image" accept="image/*" onChange={handleChange} />
+                            type="file" required name="image" accept="image/*" onChange={handleChange} />
                     </div>
                     {error && <div className="text-red-600">{error}</div>}
                     {success && <div className="text-green-600">{success}</div>}

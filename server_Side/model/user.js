@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  panimage: {
+    type: String,
+    default: null,
+  },
   phoneNumber: {
     type: String,
     default: null,
@@ -72,6 +76,7 @@ const userSchema = new mongoose.Schema({
       type: String,
       default: null,
     },
+   
   },
   profilePicture: {
     type: String,
@@ -91,6 +96,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  verified:{
+    type : Boolean ,
+    default : false
+  },
+  OTP:{
+    type:String,
+    default:null
+  }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -4,7 +4,6 @@ import { jwtDecode } from 'jwt-decode';
 import { API } from '../../Data/baseIndex';
 
 export default function Join() {
-
   const [user, setUser] = useState({
     username: '',
     fullName: '',
@@ -24,20 +23,17 @@ export default function Join() {
       taxIdentificationNumber: '',
     },
     profilePicture: '',
+    panimage: '', // Add panimage to state
     role: '',
   });
 
-
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [isBasicUser, setIsBasicUser] = useState(false); // Track if the user is a basic user
-
+  const [isBasicUser, setIsBasicUser] = useState(false);
   const [alreadyJoined, setAlreadyJoined] = useState(false);
 
   useEffect(() => {
-
     try {
-      
       const token = localStorage.getItem('token');
       const decodedToken = jwtDecode(token);
 
@@ -47,10 +43,14 @@ export default function Join() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }).then((res) => {
+          })
+          .then((res) => {
             setUser(res.data.user);
             setIsBasicUser(true);
-          }).catch((err) => { setError(err) });
+          })
+          .catch((err) => {
+            setError(err);
+          });
           break;
         default:
           setAlreadyJoined(true);
@@ -73,11 +73,28 @@ export default function Join() {
     });
   };
 
+  const handlePanImageChange = (e) => {
+    const file = e.target.files[0];
+    setUser({
+      ...user,
+      panimage: file, // Update panimage in state
+    });
+  };
+  const handlephoneno=(e)=>{
+   const value=e.target.value;
+   if (value.length!=10) {
+    setError("Phone no. must have 10 Numbers...");
+    return;
+   }
+   setUser((prevUser)=>({
+    ...prevUser,
+    phoneNumber:value
+   }))
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // If the field name contains a dot (indicating a nested field),
-    // split the field name and update the state accordingly
     if (name.includes('.')) {
       const [parentField, childField] = name.split('.');
       setUser((prevUser) => ({
@@ -88,7 +105,6 @@ export default function Join() {
         },
       }));
     } else {
-      // If the field name doesn't contain a dot, update the state normally
       setUser((prevUser) => ({
         ...prevUser,
         [name]: value,
@@ -98,6 +114,13 @@ export default function Join() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user || !user.fullName || user.fullName.trim().length === 0) {
+      setError("Full Name must be provided.");
+      setTimeout(() => {
+        setError("");
+      }, 1000);
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -106,7 +129,6 @@ export default function Join() {
         return;
       }
 
-      // Ensure that user is not null or undefined before processing
       if (!user) {
         setError('User data is missing.');
         setSuccess(null);
@@ -114,12 +136,13 @@ export default function Join() {
       }
 
       const formData = new FormData();
+      formData.append('venuereq', true);
 
-      // Append user data to the formData object
-      formData.append("venuereq",true)
       for (const key in user) {
         if (user.hasOwnProperty(key)) {
           if (key === 'profilePicture' && user[key] !== null) {
+            formData.append(key, user[key]);
+          } else if (key === 'panimage' && user[key] !== null) {
             formData.append(key, user[key]);
           } else if (typeof user[key] === 'object') {
             for (const nestedKey in user[key]) {
@@ -128,9 +151,7 @@ export default function Join() {
               }
             }
           } else {
-          
-              formData.append(key, user[key]);
-            
+            formData.append(key, user[key]);
           }
         }
       }
@@ -145,10 +166,10 @@ export default function Join() {
       const updateResponse = await axios.put(`${API}api/auth/update`, formData, config);
       setSuccess(updateResponse.data.message);
       setError(null);
+
       setTimeout(() => {
-        alert("Login Again Please");
-        localStorage.removeItem('token');
-        window.location.href='/';
+        alert('We will See your Request');
+        window.location.href = '/';
       }, 1000);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -161,7 +182,6 @@ export default function Join() {
     }
   };
 
-
   const handleButtonClick = () => {
     setError(null);
     setSuccess(null);
@@ -171,15 +191,15 @@ export default function Join() {
     <section className="min-h-screen py-10 bg-gray-50 dark:bg-gray-200 flex justify-center bg-cover items-center">
       <div className="w-full max-w-md bg-white rounded-lg shadow-xl dark:border dark:border-gray-300 p-6 sm:p-8">
         <h1 className="text-2xl font-bold text-orange-600 dark:text-orange-600 text-center mb-6">
-           Join Now
+          Join Now
         </h1>
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <small>Every purchase or complete booking we take 5% of  your payment as a service fee.</small><br/>
-                 {/* Profile Picture */}
+          <small>Every purchase or complete booking we take 5% of  your payment as a service fee.</small><br />
+          {/* Profile Picture */}
 
-                 <div>
+          <div>
             <label htmlFor="image" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
-              Profile Picture:<br/>
+              Profile Picture:<br />
               <small>Click on image to select New Profile</small>
             </label>
             <input
@@ -190,13 +210,13 @@ export default function Join() {
               onChange={handleImageChange}
             />
 
-            <label htmlFor="image" className="w-60 mx-auto flex items-center justify-center h-60  cursor-pointer border bottom-2 border-gray-400 rounded-full p-2 text-center">
-              { user.profile||user.profilePicture ? (
+            <label htmlFor="image" className="w-60 mx-auto flex items-center justify-center h-60 cursor-pointer border bottom-2 border-gray-400 rounded-full p-2 text-center">
+              {user.profile || user.profilePicture ? (
                 <img
-                  src={user.profilePicture instanceof File ? URL.createObjectURL(user.profilePicture) : `${API}${isBasicUser?user.profile:user.profilePicture}`}
+                  src={user.profilePicture instanceof File ? URL.createObjectURL(user.profilePicture) : `${API}${isBasicUser ? user.profile : user.profilePicture}`}
                   alt="Selected Image"
-                  className="max-h-60 min-h-60 min-w-60  object-cover rounded-full max-w-60 bg-cover mx-auto "
-                  
+                  className="max-h-60 min-h-60 min-w-60 object-cover rounded-full max-w-60 bg-cover mx-auto "
+
                 />
               ) : (
                 <span>Select Image</span>
@@ -215,6 +235,7 @@ export default function Join() {
               type="text"
               name="username"
               id="username"
+              required
               value={user.username}
               onChange={handleChange}
               className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -229,6 +250,7 @@ export default function Join() {
               <input
                 type="text"
                 name="fullName"
+                required
                 id="fullName"
                 value={user.fullName}
                 onChange={handleChange}
@@ -244,6 +266,7 @@ export default function Join() {
             <input
               type="email"
               name="email"
+              required
               id="email"
               value={user.email}
               onChange={handleChange}
@@ -259,6 +282,7 @@ export default function Join() {
               <input
                 type="text"
                 name="PAN"
+                required
                 id="PAN"
                 value={user.PAN}
                 onChange={handleChange}
@@ -266,6 +290,35 @@ export default function Join() {
               />
             </div>
           )}
+
+
+<div>
+            <label htmlFor="panimage" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">
+              Pan Image:
+              <br />
+              <small>Click on image to select Pan Image. <span className='text-red-500'>You cannot change Afterward..</span></small>
+            </label>
+            <input
+              type="file"
+              id="panimage"
+              className="hidden"
+              accept="image/*"
+              required
+              onChange={handlePanImageChange}
+            />
+            <label htmlFor="panimage" className="w-56 h-32 mx-auto flex items-center justify-center cursor-pointer border bottom-2 border-gray-400 p-2 text-center">
+              {user.panimage ? (
+                <img
+                  src={user.panimage instanceof File ? URL.createObjectURL(user.panimage) : `${API}${isBasicUser ? user.panimage : user.panimage}`}
+                  alt="Selected Image"
+                  className="w-56 h-32 object-cover bg-contain mx-auto"
+                />
+              ) : (
+                <span>Select Image</span>
+              )}
+            </label>
+          </div>
+
           {/* Phone Number */}
           {isBasicUser && (
             <div>
@@ -276,8 +329,9 @@ export default function Join() {
                 type="text"
                 name="phoneNumber"
                 id="phoneNumber"
+                required
                 value={user.phoneNumber}
-                onChange={handleChange}
+                onChange={handlephoneno}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
               />
             </div>
@@ -295,6 +349,7 @@ export default function Join() {
                   id="street"
                   value={user?.address?.street || ''}
                   onChange={handleChange}
+                  required
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                 />
               </div>
@@ -305,6 +360,7 @@ export default function Join() {
                 <input
                   type="text"
                   name="address.city"
+                  required
                   id="city"
                   value={user?.address?.city || ''}
                   onChange={handleChange}
@@ -318,6 +374,7 @@ export default function Join() {
                 <input
                   type="text"
                   name="address.state"
+                  required
                   id="state"
                   value={user?.address?.state || ''}
                   onChange={handleChange}
@@ -332,6 +389,7 @@ export default function Join() {
                   type="text"
                   name="address.postalCode"
                   id="postalCode"
+                  required
                   value={user?.address?.postalCode || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -345,6 +403,7 @@ export default function Join() {
                   type="text"
                   name="address.country"
                   id="country"
+                  required
                   value={user?.address?.country || ''}
                   onChange={handleChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -362,6 +421,7 @@ export default function Join() {
                 type="text"
                 name="businessDetails.businessName"
                 id="businessName"
+                required
                 value={user?.businessDetails?.businessName || ''}
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-400 p-2 text-sm"
@@ -375,6 +435,7 @@ export default function Join() {
               </label>
               <input
                 type="text"
+                required
                 name="businessDetails.registrationNumber"
                 id="registrationNumber"
                 value={user?.businessDetails?.registrationNumber || ''}
@@ -390,6 +451,7 @@ export default function Join() {
               </label>
               <input
                 type="text"
+                required
                 name="businessDetails.taxIdentificationNumber"
                 id="taxIdentificationNumber"
                 value={user?.businessDetails?.taxIdentificationNumber || ''}
@@ -398,8 +460,8 @@ export default function Join() {
               />
             </div>
           )}
-  
-          
+
+
           {/* Error message */}
           {error && (
             <div className="text-red-600 text-sm">{error}</div>

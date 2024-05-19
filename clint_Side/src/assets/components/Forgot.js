@@ -72,7 +72,7 @@ function ForgotPassword() {
                       name="email"
                       placeholder="Email address"
                       className="w-full rounded-md border border-gray-400 p-2 text-sm"
-                      required=""
+                      required
                       aria-describedby="email-error"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

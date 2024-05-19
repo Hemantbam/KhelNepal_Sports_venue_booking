@@ -2,24 +2,70 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../model/user");
-const Payment = require("../model/payment");
-const Booking = require("../model/booking");
 const nodemailer = require("nodemailer");
 const { v4: uuidv4 } = require('uuid');
-const { API, mailOptions, jwtSecret } = require("../Datas");
+const { API, mailOptions, jwtSecret, Useremail } = require("../Datas");
 const Venue = require("../model/venue");
 
 
 // Create a transporter for sending emails
 const transporter = nodemailer.createTransport(mailOptions);
 
-exports.register = async (req, res, next) => {
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const validateUsername = (username) => {
+  const usernameRegex = /^[a-z][a-z0-9]*$/; // Only lowercase letters or letters + numbers, no spaces
+  return usernameRegex.test(username);
+};
+
+const generateOTP = (length) => {
+  const digits = '0123456789';
+  let OTP = '';
+
+  for (let i = 0; i < length; i++) {
+    OTP += digits[Math.floor(Math.random() * digits.length)];
+  }
+
+  return OTP;
+};
+
+const sendOtpEmail = async (email, otp) => {
+  try {
+    // Define email options
+    const mailOptions = {
+      from: Useremail, // Sender email address
+      to: email, // Recipient email address
+      subject: 'OTP Verification', // Email subject
+      text: `Your OTP for verification is: ${otp}`, // Plain text body
+      html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>`, // HTML body
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Email sent:', info.messageId);
+    return true; // Email sent successfully
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return false; // Email sending failed
+  }
+};
+
+exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json({ message: "Username, email, or Password not provided" });
   }
-
+  if(!validateEmail(email)){
+    return res.status(400).json({ message: "Enter valid email" });
+  }
+  if(!validateUsername(username)){
+    return res.status(400).json({ message: "Enter valid Username" });
+  }
   if (password.length < 6) {
     return res.status(400).json({ message: "Password must be at least 6 characters" });
   }
@@ -36,17 +82,19 @@ exports.register = async (req, res, next) => {
     if (existingEmail) {
       return res.status(409).json({ message: "Email is already associated with an existing account" });
     }
-
+const otp=generateOTP(6);
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
       username,
       email,
       password: hash,
+      OTP:otp
     });
+    sendOtpEmail(email,otp);
 
     const maxAge = 3 * 60 * 60;
     const token = jwt.sign(
-      { id: user._id, username, email, role: user.role },
+      { id: user._id, username, fullName: user.fullName, role: user.role },
       jwtSecret,
       { expiresIn: maxAge }
     );
@@ -72,16 +120,24 @@ exports.login = async (req, res, next) => {
   const { identifier, password } = req.body;
 
   if (!identifier || !password) {
-    return res.status(400).json({ message: "Username/Email or Password not provided" });
+    return res.status(400).json({ message: "Email or Password not provided" });
   }
 
   try {
     const user = await User.findOne({
-      $or: [{ username: identifier }, { email: identifier }]
+      $or: [{ email: identifier }]
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+    const otp=generateOTP(6);
+    if(!user.verified){
+      sendOtpEmail(identifier,otp);
+      user.OTP=otp;
+     await user.save();
+      return res.status(404).json({ message: "Verify Otp first,Otp is sent to your email",verified:false });
+    
     }
 
     const result = await bcrypt.compare(password, user.password);
@@ -89,7 +145,7 @@ exports.login = async (req, res, next) => {
     if (result) {
       const maxAge = 3 * 60 * 60;
       const token = jwt.sign(
-        { id: user._id, username: user.username, email: user.email, role: user.role },
+        { id: user._id, username: user.username, fullName: user.fullName, email: user.email, role: user.role },
         jwtSecret,
         { expiresIn: maxAge }
       );
@@ -117,7 +173,7 @@ exports.login = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   // Decode token to get user information
-  console.log(req.file);
+  console.log(req);
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Token not provided' });
@@ -131,14 +187,14 @@ exports.update = async (req, res, next) => {
     console.error('Error verifying token:', error);
     return res.status(401).json({ message: 'Invalid token' });
   }
-const {role,username,email}=decodedToken;  
+  const { role, username } = decodedToken;
   if (role == 'admin') {
     id = req.query.id;
   } else {
     id = decodedToken.id;
   }
-
-  if (!id || !role || !username || !email) {
+  console.log(decodedToken, id);
+  if (!id || !role || !username) {
     return res.status(400).json({ message: "Role, username, email, or Id not provided" });
   }
 
@@ -173,13 +229,15 @@ const {role,username,email}=decodedToken;
 };
 
 function updateAdminProfile(req, userToUpdate) {
-  const { role, isRejected, venuereq, ...otherFields } = req.body;
+  const { fullName, PAN, phoneNumber, role, isRejected, venuereq, ...otherFields } = req.body;
 
   // Ensure admin can only update role
   if (role && userToUpdate.role !== 'admin') {
     userToUpdate.role = role;
   }
-
+  userToUpdate.fullName = fullName || userToUpdate.fullName;
+  userToUpdate.PAN = PAN || userToUpdate.PAN;
+  userToUpdate.phoneNumber = phoneNumber || userToUpdate.phoneNumber;
   // Update isRejected field if provided
   userToUpdate.isRejected = isRejected !== undefined ? isRejected : userToUpdate.isRejected;
 
@@ -198,12 +256,17 @@ function updateAdminProfile(req, userToUpdate) {
   }
 
   // Update profile picture if provided
-  if (req.file) {
-    userToUpdate.profilePicture = `uploads/profile/${req.file.filename}`;
+  if (req.files && req.files['profilePicture'] && req.files['profilePicture'][0]) {
+    userToUpdate.profilePicture = req.files['profilePicture'][0].path;
+  }
+
+  if (req.files && req.files['panimage'] && req.files['panimage'][0]) {
+    userToUpdate.panimage = req.files['panimage'][0].path;
   }
 }
 
 function updateNonAdminProfile(req, userToUpdate, roleE) {
+  console.log(req.file);
   const { fullName, PAN, phoneNumber, venuereq, role, isRejected, ...otherFields } = req.body;
 
   // Update basic profile information
@@ -229,7 +292,13 @@ function updateNonAdminProfile(req, userToUpdate, roleE) {
   }
 
   // Update profile picture if provided
-  userToUpdate.profilePicture = req.file ? `uploads/profile/${req.file.filename}` : userToUpdate.profilePicture;
+  if (req.files && req.files['profilePicture'] && req.files['profilePicture'][0]) {
+    userToUpdate.profilePicture = req.files['profilePicture'][0].path;
+  }
+
+  if (req.files && req.files['panimage'] && req.files['panimage'][0]) {
+    userToUpdate.panimage = req.files['panimage'][0].path;
+  }
 
   // Update venuereq field for basic users
   if (roleE === 'basic') {
@@ -260,8 +329,8 @@ exports.deleteUser = async (req, res) => {
     }
 
     const userId = req.query.id; // Assuming the user ID is passed in the query parameter 'id'
-    if(userId==decodedToken.id) {
-      return res.status(400).json({message:"You cannot delete yourself"})
+    if (userId == decodedToken.id) {
+      return res.status(400).json({ message: "You cannot delete yourself" })
     }
     if (!userId) {
       return res.status(400).json({ message: 'User ID not provided' });
@@ -373,7 +442,7 @@ exports.forgotPassword = async (req, res, next) => {
     const resetLink = `${API}reset/token=${resetToken}`;
 
     const mailOptions = {
-      from: 'sachinsubedi616@gmail.com',
+      from: Useremail,
       to: email,
       subject: 'Password Reset',
       html: `<p>To reset your password, click on the following link: <a href="${resetLink}">Reset Password</a></p>`
@@ -436,15 +505,15 @@ exports.getUsers = async (req, res, next) => {
     let users;
     if (id) {
       // If ID is provided, find user by ID
-      users = await User.findById(id, 'username fullName profilePicture email role ');
+      users = await User.findById(id, 'username fullName profilePicture  role ');
     } else if (venuereq) {
       users = await User.find({
         venuereq: true
-      }, 'username fullName profilePicture email role');
+      }, 'username fullName profilePicture  role');
     }
     else {
       // If no ID provided, retrieve all users with necessary fields
-      users = await User.find({}, 'username fullName profilePicture email role');
+      users = await User.find({}, 'username fullName profilePicture  role');
     }
 
     if (!users) {
@@ -486,5 +555,39 @@ exports.getUserForAdmin = async (req, res) => {
   } catch (error) {
     console.error('Error fetching user data:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+
+exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the stored OTP matches the provided OTP
+    if (user.OTP !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // Update the user's verified status to true
+    user.verified = true;
+    // Clear the OTP field after successful verification
+    user.OTP = undefined;
+    
+    // Save the updated user document
+    await user.save();
+
+    return res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

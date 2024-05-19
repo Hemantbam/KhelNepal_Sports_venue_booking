@@ -21,6 +21,13 @@ export default function ContactUs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !subject.trim() || !message.trim()) {
+      setErrorMessage("Please fill in all required fields properly.");
+    setTimeout(() => {
+      setErrorMessage("");
+    }, 1000);
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.post(`${API}api/contact`, {
@@ -31,7 +38,10 @@ export default function ContactUs() {
       if (response.status === 200) {
         setSuccessMessage("Message sent successfully!");
         setTimeout(() => {
-          setSuccessMessage("");
+          setSuccessMessage("We will reach you soon.");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 1000);
         }, 1000);
         setErrorMessage("");
         setEmail("");
@@ -43,9 +53,7 @@ export default function ContactUs() {
         "An error occurred while sending the message. Please try again later."
       );
       setTimeout(() => {
-        setErrorMessage(
-          ""
-        );
+        setErrorMessage("");
       }, 1000);
       setSuccessMessage("");
     } finally {
@@ -56,18 +64,18 @@ export default function ContactUs() {
   return (
     <>
       <Navbar />
-      <section className="bg-grey-100 pt-24 dark:bg-gray-100">
-        <div className=" mx-auto flex justify-center pb-6">
-          <div className=" w-6/12 bg-white dark:bg-white rounded-lg p-8 shadow-2xl ">
-            <h2 className="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-orange-500 ">
+      <section className="bg-gray-100 dark:bg-gray-100 py-32">
+        <div className="container mx-auto px-4">
+          <div className="w-full md:w-1/2 lg:w-1/3 mx-auto bg-white dark:bg-white rounded-lg p-8 shadow-lg">
+            <h2 className="mb-4 text-3xl font-extrabold text-center text-gray-900 dark:text-orange-500">
               Contact Us
             </h2>
-            <p className="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-900 sm:text-xl">
+            <p className="mb-8 text-center text-gray-500 dark:text-gray-900">
               Got a technical issue? Want to send feedback about our feature?
               Need details about our Business plan? Let us know.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label
                   htmlFor="email"
@@ -98,14 +106,13 @@ export default function ContactUs() {
                   id="subject"
                   name="subject"
                   value={subject}
-
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Let us know how we can help you"
                   required
                 />
               </div>
-              <div className="sm:col-span-2">
+              <div>
                 <label
                   htmlFor="message"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900"
@@ -115,13 +122,12 @@ export default function ContactUs() {
                 <textarea
                   id="message"
                   name="message"
-                  required
                   value={message}
                   onChange={handleInputChange}
                   rows={6}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                   placeholder="Leave a comment..."
-                  defaultValue={""}
+                  required
                 />
               </div>
               {errorMessage && (
@@ -130,16 +136,15 @@ export default function ContactUs() {
               {successMessage && (
                 <p className="text-green-500">{successMessage}</p>
               )}
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-orange-700 sm:w-fit hover:bg-orange-800 focus:ring-4 focus:outline-none focus:ring-orange-300 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-primary-800 ${loading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {loading ? "Sending..." : "Send message"}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-3 text-sm font-medium text-white rounded-lg bg-orange-700 hover:bg-orange-800 focus:ring-2 focus:ring-orange-300 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-primary-800 ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {loading ? "Sending..." : "Send message"}
+              </button>
             </form>
           </div>
         </div>

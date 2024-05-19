@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 export default function AddVenue() {
-  const [UserId, setUserId] = useState("");
+  const [UserId, setUserId] = useState(jwtDecode(localStorage.getItem('token')).id);
   const [usernames, setUsernames] = useState([]);
   const [basic, setBasic] = useState(false);
   const [Admin, setAdmin] = useState(false);
@@ -37,12 +37,30 @@ export default function AddVenue() {
   const fetchUsernames = async () => {
     try {
       const response = await axios.get(`${API}api/allusers`);
-      setUsernames(response.data.users);
+      setUsernames(response.data.users.filter(res=>res.role!='basic'));
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
   };
+  const handleCapacity = (e) => {
+    const value = parseInt(e.target.value);
+    if (value < 1 || value > 1000) {
+      setError('Capacity must be a positive number between 0 and 1000.');
+    } else {
+      setFormData({ ...formData, capacity: value });
+      setError(null);
+    }
+  };
 
+  const handlePrice = (e) => {
+    const value = parseInt(e.target.value);
+    if (value < 1 || value > 1000) {
+      setError('Price must be a positive number between 0 and 1000.');
+    } else {
+      setFormData({ ...formData, pricePerHour: value });
+      setError(null);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (name === 'facilities') {
@@ -57,6 +75,17 @@ export default function AddVenue() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { name, location } = formData;
+
+    // Check if name or location is empty
+    if (!name.trim() || !location.trim()) {
+      setError("Please enter valid Name and Location.");
+      setTimeout(() => {
+        setError("");
+      }, 1000);
+      return;
+    }
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -177,7 +206,7 @@ export default function AddVenue() {
               name="pricePerHour"
               required
               value={formData.pricePerHour}
-              onChange={handleChange}
+              onChange={handlePrice}
             />
           </div>
           <div className="mb-4">
@@ -200,7 +229,7 @@ export default function AddVenue() {
               name="capacity"
               required
               value={formData.capacity}
-              onChange={handleChange}
+              onChange={handleCapacity}
             />
           </div>
           <div className="mb-4">

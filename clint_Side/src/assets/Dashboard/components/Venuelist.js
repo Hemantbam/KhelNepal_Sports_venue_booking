@@ -82,7 +82,7 @@ export default function VenueList({ onMenuClick }) {
               <tr key={venue._id} className="odd:bg-gray-100">
                 <td className="border py-2 px-4">{index + 1}.</td>
                 <td className="border py-2 px-4 font-bold text-orange-600"><Link to={`/venues/${venue._id}`}>{venue.name}</Link></td>
-                {decode.role === 'admin' && <td className="border py-2 px-4"><User userid={venue.managedBy} /></td>}
+                {decode.role === 'admin' && <td className="border py-2 px-4"><Link to={`/profile/${venue.managedBy}`}> <User userid={venue.managedBy}/></Link></td>}
                 <td className="border py-2 px-4">{venue.location}</td>
                 <td className="border py-2 px-4">{venue.capacity}</td>
                 <td className="border py-2 px-4">Rs. {venue.pricePerHour}/-</td>

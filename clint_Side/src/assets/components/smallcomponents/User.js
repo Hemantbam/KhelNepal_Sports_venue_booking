@@ -20,10 +20,10 @@ const User = ({ userid }) => {
   }, [userid]);
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center text-sm">
       {user && (
         <>
-          <img src={`${API}${user.profilePicture}`} alt="Profile" className="w-8 h-8 rounded-full mr-4" />
+          <img src={`${API}${user.profilePicture}`} alt="Profile" className="w-8 h-8  object-cover rounded-full mr-4" />
           <div>
             <h2 className="text-lg font-semibold">{user.firstName}</h2>
             <p className="text-gray-500">{user.username}</p>

@@ -28,11 +28,13 @@ const Booking = () => {
     });
 
     const handleInputChange = (e) => {
+
         const { name, value } = e.target;
         setBookingData({
             ...bookingData,
             [name]: value
         });
+        console.log(bookingData);
     };
 
     const calculatePrice = (startDateStr, endDateStr) => {
@@ -201,6 +203,10 @@ const Booking = () => {
     // Update price when startDate or endDate changes
     useEffect(() => {
         if (bookingData.startDate && bookingData.endDate) {
+            var starttime=new Date(bookingData.startDate).getTime()/(1000*60*60);
+            var endtime=new Date(bookingData.endDate).getTime()/(1000*60*60);
+
+            console.log(starttime,endtime,(endtime-starttime),Venue.pricePerHour,)
             const price = calculatePrice(bookingData.startDate, bookingData.endDate);
             setBookingData(prevData => ({
                 ...prevData,

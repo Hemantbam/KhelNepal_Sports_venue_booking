@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API } from '../../Data/baseIndex';
 import { Link } from 'react-router-dom';
-import User from '../../components/smallcomponents/User'
+import User from '../../components/smallcomponents/User';
+
 export default function PaymentList() {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,15 +35,20 @@ export default function PaymentList() {
                         }
                     });
 
-                    const bookerName = bookingResponse.data[0]?.fullName;
-                    const bookerId = bookingResponse.data[0]?.user;
+                    const bookingDetails = bookingResponse.data[0];
+                    const bookerName = bookingDetails?.fullName;
+                    const bookerId = bookingDetails?.user;
+                    const bookingStatus = bookingDetails?.status;
+                    const manager=venueResponse.data.venues[0]?.managedBy;
                     const venueName = venueResponse.data.venues[0]?.name;
 
                     const paymentWithDetails = {
                         ...payment,
                         bookerName,
                         bookerId,
-                        venueName
+                        bookingStatus,
+                        venueName,
+                        manager
                     };
 
                     paymentsWithDetails.push(paymentWithDetails);
@@ -60,7 +66,7 @@ export default function PaymentList() {
         };
 
         fetchData();
-    }, [])
+    }, []);
 
     console.log(payments);
 
@@ -94,8 +100,6 @@ export default function PaymentList() {
         }
     };
 
-
-
     return (
         <div className="container mx-auto py-8 px-4 text-center">
             <h1 className="text-3xl font-semibold mb-4 text-orange-600 mx-auto">Payments</h1>
@@ -112,9 +116,11 @@ export default function PaymentList() {
                                     <th className="border py-2 px-4">S.N</th>
                                     <th className="border py-2 px-4">Booker Name</th>
                                     <th className="border py-2 px-4">Venue Name</th>
-                                    <th className="border py-2 px-4">Profile</th>
+                                    <th className="border py-2 px-4">Booker Profile</th>
                                     <th className="border py-2 px-4">Payment Amount</th>
                                     <th className="border py-2 px-4">Status</th>
+                                    <th className="border py-2 px-4">Booking Status</th>
+                                    <th className="border py-2 px-4">Managed By</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,6 +141,12 @@ export default function PaymentList() {
                                             {payment.redirected ? 'Already Paid' : (
                                                 <button className='bg-orange-600 text-white px-3 py-2 rounded-md hover:bg-orange-800 transition-colors active:scale-90' onClick={() => handlePaymentClick(payment._id)}>Pay Now</button>
                                             )}
+                                        </td>
+                                        <td className="border py-2 px-4">
+                                            {payment.bookingStatus}
+                                        </td>
+                                        <td className="border py-2 px-4 text-orange-600 font-bold">
+                                        <Link to={`/profile/${payment.manager}`}><User userid={payment.manager} /></Link>
                                         </td>
                                     </tr>
                                 ))}

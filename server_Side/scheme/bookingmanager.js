@@ -51,7 +51,7 @@ console.log(venue.managedBy);
                         Payment.create({
                             bookingid: newBooking._id,
                         venueid:bookingData.venue,
-                            amount: khaltiData.amount*0.95,
+                            amount: khaltiData.amount*0.95, //commision
                             paymentdetails: serializedData,
                         })
                             .then(newPayment => {
@@ -131,6 +131,7 @@ async function getBookingById(bookingId) {
         throw new Error(`Error retrieving booking: ${error.message}`);
     }
 }
+
 async function updateBooking(req, res) {
     try {
         // Extract the token from the Authorization header
@@ -157,18 +158,23 @@ async function updateBooking(req, res) {
         if (!venue) {
             throw new Error('Venue not found');
         }
-
+        if(booking.status=='cancelled'||booking.status=='confirmed'){
+            throw new Error('Cancelled or Confirmed Bookings Can not Be Edited');
+        }
         // Check if the user is an admin, the owner of the booking, or a venue manager managing the venue associated with the booking
         if (
             userRole === 'admin' ||
             (userRole === 'venue' && venue.managedBy.toString() === userId) ||
             (decodedToken.id === booking.user.toString() )
         ) {
+            
             // Update the booking
             const updatedBooking = await Booking.findByIdAndUpdate(req.query.id, {status:req.body.status,reason:req.body.reason}, { new: true });
             if (!updatedBooking) {
                 throw new Error('Booking not found');
-            }else{
+            }
+            
+            else{
               if(updatedBooking.status=='confirmed'||updatedBooking.status=='cancelled'){
                 sendMailtobooker(updatedBooking.user,updatedBooking.status,updatedBooking.reason);}
             }

@@ -3,10 +3,9 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../model/user");
 const nodemailer = require("nodemailer");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const { API, mailOptions, jwtSecret, Useremail } = require("../Datas");
 const Venue = require("../model/venue");
-
 
 // Create a transporter for sending emails
 const transporter = nodemailer.createTransport(mailOptions);
@@ -22,8 +21,8 @@ const validateUsername = (username) => {
 };
 
 const generateOTP = (length) => {
-  const digits = '0123456789';
-  let OTP = '';
+  const digits = "0123456789";
+  let OTP = "";
 
   for (let i = 0; i < length; i++) {
     OTP += digits[Math.floor(Math.random() * digits.length)];
@@ -38,7 +37,7 @@ const sendOtpEmail = async (email, otp) => {
     const mailOptions = {
       from: Useremail, // Sender email address
       to: email, // Recipient email address
-      subject: 'OTP Verification', // Email subject
+      subject: "OTP Verification", // Email subject
       text: `Your OTP for verification is: ${otp}`, // Plain text body
       html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>`, // HTML body
     };
@@ -46,10 +45,10 @@ const sendOtpEmail = async (email, otp) => {
     // Send the email
     const info = await transporter.sendMail(mailOptions);
 
-    console.log('Email sent:', info.messageId);
+    console.log("Email sent:", info.messageId);
     return true; // Email sent successfully
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
     return false; // Email sending failed
   }
 };
@@ -58,16 +57,20 @@ exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ message: "Username, email, or Password not provided" });
+    return res
+      .status(400)
+      .json({ message: "Username, email, or Password not provided" });
   }
-  if(!validateEmail(email)){
+  if (!validateEmail(email)) {
     return res.status(400).json({ message: "Enter valid email" });
   }
-  if(!validateUsername(username)){
+  if (!validateUsername(username)) {
     return res.status(400).json({ message: "Enter valid Username" });
   }
   if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters" });
   }
 
   try {
@@ -80,19 +83,21 @@ exports.register = async (req, res) => {
     // Check if the email is already associated with an existing user
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
-      return res.status(409).json({ message: "Email is already associated with an existing account" });
+      return res.status(409).json({
+        message: "Email is already associated with an existing account",
+      });
     }
-const otp=generateOTP(6);
+    const otp = generateOTP(6);
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
       username,
       email,
       password: hash,
-      OTP:otp
+      OTP: otp,
     });
-    sendOtpEmail(email,otp);
+    sendOtpEmail(email, otp);
 
-    const maxAge = 3 * 60 * 60;
+    const maxAge = 3 * 60 * 60; //Token Expiry Time
     const token = jwt.sign(
       { id: user._id, username, fullName: user.fullName, role: user.role },
       jwtSecret,
@@ -107,7 +112,7 @@ const otp=generateOTP(6);
     res.status(201).json({
       message: "User successfully created",
       user: user._id,
-      token: token
+      token: token,
     });
   } catch (error) {
     res.status(400).json({
@@ -116,6 +121,7 @@ const otp=generateOTP(6);
     });
   }
 };
+
 exports.login = async (req, res, next) => {
   const { identifier, password } = req.body;
 
@@ -125,19 +131,21 @@ exports.login = async (req, res, next) => {
 
   try {
     const user = await User.findOne({
-      $or: [{ email: identifier }]
+      $or: [{ email: identifier }],
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const otp=generateOTP(6);
-    if(!user.verified){
-      sendOtpEmail(identifier,otp);
-      user.OTP=otp;
-     await user.save();
-      return res.status(404).json({ message: "Verify Otp first,Otp is sent to your email",verified:false });
-    
+    const otp = generateOTP(6);
+    if (!user.verified) {
+      sendOtpEmail(identifier, otp);
+      user.OTP = otp;
+      await user.save();
+      return res.status(404).json({
+        message: "Verify Otp first,Otp is sent to your email",
+        verified: false,
+      });
     }
 
     const result = await bcrypt.compare(password, user.password);
@@ -145,7 +153,13 @@ exports.login = async (req, res, next) => {
     if (result) {
       const maxAge = 3 * 60 * 60;
       const token = jwt.sign(
-        { id: user._id, username: user.username, fullName: user.fullName, email: user.email, role: user.role },
+        {
+          id: user._id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+        },
         jwtSecret,
         { expiresIn: maxAge }
       );
@@ -158,7 +172,7 @@ exports.login = async (req, res, next) => {
       return res.status(200).json({
         message: "User successfully logged in",
         user: user._id,
-        token: token
+        token: token,
       });
     } else {
       return res.status(400).json({ message: "Incorrect password" });
@@ -175,27 +189,31 @@ exports.update = async (req, res, next) => {
   // Decode token to get user information
   console.log(req);
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Token not provided' });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token not provided" });
   }
-  const token = authHeader.split(' ')[1];
+
+  const token = authHeader.split(" ")[1];
   let decodedToken;
   try {
     decodedToken = jwt.verify(token, jwtSecret);
-    console.log('Decoded Token:', decodedToken);
+    console.log("Decoded Token:", decodedToken);
   } catch (error) {
-    console.error('Error verifying token:', error);
-    return res.status(401).json({ message: 'Invalid token' });
+    console.error("Error verifying token:", error);
+    return res.status(401).json({ message: "Invalid token" });
   }
+
   const { role, username } = decodedToken;
-  if (role == 'admin') {
-    id = req.query.id;
+  if (role == "admin") {
+    id = req.query.id; //Frontend Id
   } else {
-    id = decodedToken.id;
+    id = decodedToken.id; //Tokens Id
   }
   console.log(decodedToken, id);
   if (!id || !role || !username) {
-    return res.status(400).json({ message: "Role, username, email, or Id not provided" });
+    return res
+      .status(400)
+      .json({ message: "Role, username, email, or Id not provided" });
   }
 
   try {
@@ -205,8 +223,13 @@ exports.update = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if ((role === "basic" || role === "venue") && username !== userToUpdate.username) {
-      return res.status(403).json({ message: "Unauthorized to update this profile" });
+    if (
+      (role === "basic" || role === "venue") &&
+      username !== userToUpdate.username
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this profile" });
     }
 
     // Update logic for admins
@@ -218,7 +241,9 @@ exports.update = async (req, res, next) => {
 
     await userToUpdate.save();
 
-    return res.status(200).json({ message: "Update successful", user: userToUpdate });
+    return res
+      .status(200)
+      .json({ message: "Update successful", user: userToUpdate });
   } catch (error) {
     console.error("Error updating user:", error); // Log the error for debugging
     return res.status(400).json({
@@ -229,25 +254,35 @@ exports.update = async (req, res, next) => {
 };
 
 function updateAdminProfile(req, userToUpdate) {
-  const { fullName, PAN, phoneNumber, role, isRejected, venuereq, ...otherFields } = req.body;
+  const {
+    fullName,
+    PAN,
+    phoneNumber,
+    role,
+    isrejected,
+    venuereq,
+    ...otherFields
+  } = req.body;
 
   // Ensure admin can only update role
-  if (role && userToUpdate.role !== 'admin') {
+  if (role && userToUpdate.role !== "admin") {
     userToUpdate.role = role;
   }
   userToUpdate.fullName = fullName || userToUpdate.fullName;
   userToUpdate.PAN = PAN || userToUpdate.PAN;
   userToUpdate.phoneNumber = phoneNumber || userToUpdate.phoneNumber;
   // Update isRejected field if provided
-  userToUpdate.isRejected = isRejected !== undefined ? isRejected : userToUpdate.isRejected;
+  userToUpdate.isrejected =
+    isrejected !== undefined ? isrejected : userToUpdate.isrejected;
 
   // Update venuereq field if provided
-  userToUpdate.venuereq = venuereq !== undefined ? venuereq : userToUpdate.venuereq;
+  userToUpdate.venuereq =
+    venuereq !== undefined ? venuereq : userToUpdate.venuereq;
 
   // Update nested fields
   for (const key in otherFields) {
-    const [parentField, childField] = key.split('.');
-    if (parentField === 'address' || parentField === 'businessDetails') {
+    const [parentField, childField] = key.split(".");
+    if (parentField === "address" || parentField === "businessDetails") {
       if (!userToUpdate[parentField]) {
         userToUpdate[parentField] = {};
       }
@@ -256,18 +291,30 @@ function updateAdminProfile(req, userToUpdate) {
   }
 
   // Update profile picture if provided
-  if (req.files && req.files['profilePicture'] && req.files['profilePicture'][0]) {
-    userToUpdate.profilePicture = req.files['profilePicture'][0].path;
+  if (
+    req.files &&
+    req.files["profilePicture"] &&
+    req.files["profilePicture"][0]
+  ) {
+    userToUpdate.profilePicture = req.files["profilePicture"][0].path;
   }
 
-  if (req.files && req.files['panimage'] && req.files['panimage'][0]) {
-    userToUpdate.panimage = req.files['panimage'][0].path;
+  if (req.files && req.files["panimage"] && req.files["panimage"][0]) {
+    userToUpdate.panimage = req.files["panimage"][0].path;
   }
 }
 
 function updateNonAdminProfile(req, userToUpdate, roleE) {
   console.log(req.file);
-  const { fullName, PAN, phoneNumber, venuereq, role, isRejected, ...otherFields } = req.body;
+  const {
+    fullName,
+    PAN,
+    phoneNumber,
+    venuereq,
+    role,
+    isrejected,
+    ...otherFields
+  } = req.body;
 
   // Update basic profile information
   userToUpdate.fullName = fullName || userToUpdate.fullName;
@@ -275,15 +322,17 @@ function updateNonAdminProfile(req, userToUpdate, roleE) {
   userToUpdate.phoneNumber = phoneNumber || userToUpdate.phoneNumber;
 
   // Update isRejected field if provided
-  userToUpdate.isRejected = isRejected !== undefined ? isRejected : userToUpdate.isRejected;
+  userToUpdate.isrejected =
+    isrejected !== undefined ? isrejected : userToUpdate.isrejected;
 
   // Update venuereq field if provided
-  userToUpdate.venuereq = venuereq !== undefined ? venuereq : userToUpdate.venuereq;
+  userToUpdate.venuereq =
+    venuereq !== undefined ? venuereq : userToUpdate.venuereq;
 
   // Update nested fields
   for (const key in otherFields) {
-    const [parentField, childField] = key.split('.');
-    if (parentField === 'address' || parentField === 'businessDetails') {
+    const [parentField, childField] = key.split(".");
+    if (parentField === "address" || parentField === "businessDetails") {
       if (!userToUpdate[parentField]) {
         userToUpdate[parentField] = {};
       }
@@ -292,54 +341,59 @@ function updateNonAdminProfile(req, userToUpdate, roleE) {
   }
 
   // Update profile picture if provided
-  if (req.files && req.files['profilePicture'] && req.files['profilePicture'][0]) {
-    userToUpdate.profilePicture = req.files['profilePicture'][0].path;
+  if (
+    req.files &&
+    req.files["profilePicture"] &&
+    req.files["profilePicture"][0]
+  ) {
+    userToUpdate.profilePicture = req.files["profilePicture"][0].path;
   }
 
-  if (req.files && req.files['panimage'] && req.files['panimage'][0]) {
-    userToUpdate.panimage = req.files['panimage'][0].path;
+  if (req.files && req.files["panimage"] && req.files["panimage"][0]) {
+    userToUpdate.panimage = req.files["panimage"][0].path;
   }
 
   // Update venuereq field for basic users
-  if (roleE === 'basic') {
+  if (roleE === "basic") {
     userToUpdate.venuereq = venuereq || userToUpdate.venuereq;
   }
 
   // Update role and venuereq field for admin users
-  if (roleE === 'admin') {
+  if (roleE === "admin") {
     userToUpdate.venuereq = false;
     userToUpdate.role = role || userToUpdate.role;
   }
 }
 
+
 exports.deleteUser = async (req, res) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Token not provided' });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token not provided" });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
 
   try {
     const decodedToken = jwt.verify(token, jwtSecret);
     console.log("decoded", decodedToken);
-    if (decodedToken.role !== 'admin') {
-      return res.status(403).json({ message: 'Only admin can delete users' });
+    if (decodedToken.role !== "admin") {
+      return res.status(403).json({ message: "Only admin can delete users" });
     }
 
     const userId = req.query.id; // Assuming the user ID is passed in the query parameter 'id'
     if (userId == decodedToken.id) {
-      return res.status(400).json({ message: "You cannot delete yourself" })
+      return res.status(400).json({ message: "You cannot delete yourself" });
     }
     if (!userId) {
-      return res.status(400).json({ message: 'User ID not provided' });
+      return res.status(400).json({ message: "User ID not provided" });
     }
 
     // Check if the user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Find venues managed by the user
@@ -351,20 +405,19 @@ exports.deleteUser = async (req, res) => {
     // Delete the user
     await User.findByIdAndDelete(userId);
 
-    return res.status(200).json({ message: 'User and associated venues successfully deleted' });
+    return res
+      .status(200)
+      .json({ message: "User and associated venues successfully deleted" });
   } catch (error) {
     console.error(error);
-    return res.status(401).json({ message: 'Invalid token' });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 
-
-
-
 exports.adminAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
     jwt.verify(token, jwtSecret, async (err, decodedToken) => {
       if (err) {
         return res.status(401).json({ message: "Not authorized" });
@@ -373,7 +426,9 @@ exports.adminAuth = (req, res, next) => {
           return res.status(401).json({ message: "Not authorized" });
         } else {
           try {
-            const user = await User.findById(decodedToken.id).select('-password'); // Exclude the password field
+            const user = await User.findById(decodedToken.id).select(
+              "-password"
+            ); // Exclude the password field
             if (!user) {
               return res.status(404).json({ message: "User not found" });
             }
@@ -387,14 +442,16 @@ exports.adminAuth = (req, res, next) => {
       }
     });
   } else {
-    return res.status(401).json({ message: "Not authorized, token not available" });
+    return res
+      .status(401)
+      .json({ message: "Not authorized, token not available" });
   }
 };
 
 exports.userAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
     jwt.verify(token, jwtSecret, async (err, decodedToken) => {
       if (err) {
         return res.status(401).json({ message: "Not authorized" });
@@ -408,7 +465,12 @@ exports.userAuth = (req, res, next) => {
               return res.status(404).json({ message: "User not found" });
             }
             // Attach user profile data to the response object
-            res.locals.userData = { id: user.id, username: user.username, email: user.email, profile: user.profilePicture };
+            res.locals.userData = {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              profile: user.profilePicture,
+            };
             res.json({ message: "Authorized", user: res.locals.userData }); // Include user object in the response
           } catch (error) {
             return res.status(500).json({ message: "Internal server error" });
@@ -417,11 +479,11 @@ exports.userAuth = (req, res, next) => {
       }
     });
   } else {
-    return res.status(401).json({ message: "Not authorized, token not available" });
+    return res
+      .status(401)
+      .json({ message: "Not authorized, token not available" });
   }
 };
-
-
 
 exports.forgotPassword = async (req, res, next) => {
   const { email } = req.body;
@@ -444,17 +506,21 @@ exports.forgotPassword = async (req, res, next) => {
     const mailOptions = {
       from: Useremail,
       to: email,
-      subject: 'Password Reset',
-      html: `<p>To reset your password, click on the following link: <a href="${resetLink}">Reset Password</a></p>`
+      subject: "Password Reset",
+      html: `<p>To reset your password, click on the following link: <a href="${resetLink}">Reset Password</a></p>`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.log("Error sending reset token:", error);
-        return res.status(500).json({ message: "Failed to send reset token via email" });
+        return res
+          .status(500)
+          .json({ message: "Failed to send reset token via email" });
       } else {
         console.log("Reset token sent successfully:", info.response);
-        return res.status(200).json({ message: "Reset token sent successfully.Check your Mail" });
+        return res
+          .status(200)
+          .json({ message: "Reset token sent successfully.Check your Mail" });
       }
     });
   } catch (error) {
@@ -467,26 +533,28 @@ exports.resetPassword = async (req, res, next) => {
   const { newPassword, token } = req.body;
 
   try {
-    console.log('Attempting to reset password...');
+    console.log("Attempting to reset password...");
 
     const user = await User.findOne({ resetToken: token });
 
     if (!user) {
-      console.log('User not found or token expired:', token);
-      return res.status(404).json({ message: "User not found or token expired" });
+      console.log("User not found or token expired:", token);
+      return res
+        .status(404)
+        .json({ message: "User not found or token expired" });
     }
 
-    console.log('User found. Hashing new password...');
+    console.log("User found. Hashing new password...");
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    console.log('Updating user password...');
+    console.log("Updating user password...");
 
     user.password = hashedPassword;
     user.resetToken = null;
     await user.save();
 
-    console.log('Password reset successfully.');
+    console.log("Password reset successfully.");
 
     return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
@@ -494,7 +562,6 @@ exports.resetPassword = async (req, res, next) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 
 exports.getUsers = async (req, res, next) => {
@@ -505,15 +572,20 @@ exports.getUsers = async (req, res, next) => {
     let users;
     if (id) {
       // If ID is provided, find user by ID
-      users = await User.findById(id, 'username fullName profilePicture  role ');
+      users = await User.findById(
+        id,
+        "username fullName profilePicture  role "
+      );
     } else if (venuereq) {
-      users = await User.find({
-        venuereq: true
-      }, 'username fullName profilePicture  role');
-    }
-    else {
+      users = await User.find(
+        {
+          venuereq: true,
+        },
+        "username fullName profilePicture  role"
+      );
+    } else {
       // If no ID provided, retrieve all users with necessary fields
-      users = await User.find({}, 'username fullName profilePicture  role');
+      users = await User.find({}, "username fullName profilePicture  role");
     }
 
     if (!users) {
@@ -527,38 +599,34 @@ exports.getUsers = async (req, res, next) => {
   }
 };
 
-
-
 exports.getUserForAdmin = async (req, res) => {
   try {
     // Extract the bearer token from the request headers
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization.split(" ")[1];
 
     // Decode the bearer token to get the role of the user
     const decodedToken = jwt.verify(token, jwtSecret);
 
     // Check if the user's role is 'admin'
-    if (decodedToken.role !== 'admin') {
-      return res.status(403).json({ message: 'Unauthorized' });
+    if (decodedToken.role !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
     }
 
     // Fetch the user data from the database excluding the password field
-    const user = await User.findById(req.query.id).select('-password');
+    const user = await User.findById(req.query.id).select("-password");
 
     // Check if the user exists
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Send the user data as the response
     res.status(200).json({ user });
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 
 exports.verifyOtp = async (req, res) => {
@@ -569,25 +637,25 @@ exports.verifyOtp = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if the stored OTP matches the provided OTP
     if (user.OTP !== otp) {
-      return res.status(400).json({ message: 'Invalid OTP' });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     // Update the user's verified status to true
     user.verified = true;
     // Clear the OTP field after successful verification
     user.OTP = undefined;
-    
+
     // Save the updated user document
     await user.save();
 
-    return res.status(200).json({ message: 'OTP verified successfully' });
+    return res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
-    console.error('Error verifying OTP:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -67,8 +67,9 @@ export default function BookingsList({ onMenuClick }) {
             }
         } catch (error) {
             console.error('Error confirming booking:', error);
-            window.alert('Failed to confirm booking');
+            window.alert('Failed to confirm booking',error.response.data.error);
         }
+        fetchData();
     };
 
     const handleCancelBooking = async (bookingId) => {
@@ -88,8 +89,9 @@ export default function BookingsList({ onMenuClick }) {
             }
         } catch (error) {
             console.error('Error canceling booking:', error);
-            window.alert('Failed to cancel booking');
+            window.alert('Failed to cancel booking',error.response.data.error);
         }
+       fetchData();
     };
 
     return (

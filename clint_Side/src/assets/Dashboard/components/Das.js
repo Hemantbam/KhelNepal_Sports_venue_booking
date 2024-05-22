@@ -1,18 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
-import Chart from "chart.js/auto";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../../Data/baseIndex";
 import { Link } from "react-router-dom";
 import LineChart from "./Chart";
-import { jwtDecode } from "jwt-decode";
-
+import { jwtDecode } from "jwt-decode"; // Corrected import
 
 const Dashboard = () => {
   const [payments, setPayments] = useState([]);
   const [totalPayments, setTotalPayments] = useState(0);
   const [bookingsData, setBookingsData] = useState([]);
   const [totalVenues, setTotalVenues] = useState(0);
-  const [venues, setVenues] = useState([]); // Declare venues state
+  const [venues, setVenues] = useState([]);
   const [reviewsByVenue, setReviewsByVenue] = useState([]);
 
   useEffect(() => {
@@ -20,80 +18,120 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const decodedToken = jwtDecode(token);
-
+  
         // Fetch venues managed by the current user
-        const venuesResponse = await axios.get(`${API}api/venues?managedBy=${decodedToken.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
+        const venuesResponse = await axios.get(
+          `${API}api/venues?managedBy=${decodedToken.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
         setVenues(venuesResponse.data.venues);
         setTotalVenues(venuesResponse.data.venues.length);
-
+  
         // Extract venue ids from the response
-        const venueIds = venuesResponse.data.venues.map(venue => venue._id);
-
+        const venueIds = venuesResponse.data.venues.map((venue) => venue._id);
+  
         // Fetch bookings associated with each venue
         let aggregatedBookingsData = [];
         for (const venueId of venueIds) {
-          const bookingsResponse = await axios.get(`${API}api/bookings?venue=${venueId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`
+          const bookingsResponse = await axios.get(
+            `${API}api/bookings?venue=${venueId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-          });
+          );
           if (bookingsResponse.data && Array.isArray(bookingsResponse.data)) {
-            const uniqueBookings = bookingsResponse.data.filter(newBooking => {
-              return !aggregatedBookingsData.some(existingBooking => existingBooking._id === newBooking._id);
-            });
-            aggregatedBookingsData = [...aggregatedBookingsData, ...uniqueBookings];
+            const uniqueBookings = bookingsResponse.data.filter(
+              (newBooking) => {
+                return (
+                  newBooking.status === "confirmed" &&
+                  !aggregatedBookingsData.some(
+                    (existingBooking) => existingBooking._id === newBooking._id
+                  )
+                );
+              }
+            );
+            aggregatedBookingsData = [
+              ...aggregatedBookingsData,
+              ...uniqueBookings,
+            ];
           } else {
-            console.error('Invalid bookings data:', bookingsResponse.data);
+            console.error("Invalid bookings data:", bookingsResponse.data);
           }
         }
         setBookingsData(aggregatedBookingsData);
-
+  
         // Fetch reviews for each venue
-        const reviewsPromises = venueIds.map(async venueId => {
-          const reviewsResponse = await axios.get(`${API}api/reviews?venueid=${venueId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`
+        const reviewsPromises = venueIds.map(async (venueId) => {
+          const reviewsResponse = await axios.get(
+            `${API}api/reviews?venueid=${venueId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-          });
+          );
           return { venueId, reviews: reviewsResponse.data.reviews };
         });
-
+  
         // Resolve all promises and set reviews by venue
-        Promise.all(reviewsPromises).then(reviewsData => {
+        Promise.all(reviewsPromises).then((reviewsData) => {
           const reviewsByVenueMap = {};
           reviewsData.forEach(({ venueId, reviews }) => {
             reviewsByVenueMap[venueId] = reviews;
           });
-          setReviewsByVenue(reviewsData.flatMap(data => data.reviews));
+          setReviewsByVenue(reviewsData.flatMap((data) => data.reviews));
         });
-
+  
         // Fetch payments data
         const paymentResponse = await axios.get(`${API}api/payments`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        setPayments(paymentResponse.data.payments);
-
-        // Calculate total payments
-        const total = calculateTotalPayments(paymentResponse.data.payments);
-        setTotalPayments(total);
+        
+        // Check if paymentResponse.data is an array before filtering
+        if (Array.isArray(paymentResponse.data.payments)) {
+          // Filter payments based on associated bookings' status
+          const filteredPayments = paymentResponse.data.payments.filter(payment => {
+            const associatedBooking = aggregatedBookingsData.find(booking => booking._id === payment.bookingid);
+            return associatedBooking && (associatedBooking.status === "confirmed" || associatedBooking.status === "completed");
+          });
+          setPayments(filteredPayments);
+        
+          // Calculate total payments
+          const total = calculateTotalPayments(filteredPayments);
+          setTotalPayments(total);
+        } else {
+          console.error("Invalid payment data:", paymentResponse.data);
+        }
+        
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       }
     };
-
+  
     fetchDashboardData();
   }, []);
+  
 
   // Calculate total payments
   const calculateTotalPayments = (bookings) => {
-    return bookings.reduce((total, booking) => total + booking.amount, 0);
+
+  
+    return bookings.reduce((total, booking) => {
+      // Only add the amount if the booking status is "confirmed"
+    
+        return total + booking.amount;
+ 
+    }, 0);
   };
+
   return (
     <main>
       <div className="pt-6 px-4">
@@ -147,19 +185,29 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white">
-                        {payments.map((payment, index) => (
-                          <tr key={index}>
-                            <td className="p-4 whitespace-nowrap text-sm font-normal text-gray-900">
-                              Payment from <span className="font-semibold">{payment.paymentdetails && JSON.parse(payment.paymentdetails).user && JSON.parse(payment.paymentdetails).user.name}</span>
-                            </td>
-                            <td className="p-4 whitespace-nowrap text-sm font-normal text-gray-500">
-                              {payment.createdAt && new Date(payment.createdAt).toLocaleString()}
-                            </td>
-                            <td className="p-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                              Rs.{payment.amount && payment.amount / 100}/-
-                            </td>
-                          </tr>
-                        ))}
+                        {payments.map((payment, index) =>  (
+                              <tr key={index}>
+                                <td className="p-4 whitespace-nowrap text-sm font-normal text-gray-900">
+                                  Payment from{" "}
+                                  <span className="font-semibold">
+                                    {payment.paymentdetails &&
+                                      JSON.parse(payment.paymentdetails).user &&
+                                      JSON.parse(payment.paymentdetails).user
+                                        .name}
+                                  </span>
+                                </td>
+                                <td className="p-4 whitespace-nowrap text-sm font-normal text-gray-500">
+                                  {payment.createdAt &&
+                                    new Date(
+                                      payment.createdAt
+                                    ).toLocaleString()}
+                                </td>
+                                <td className="p-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                  Rs.{payment.amount && payment.amount / 100}/-
+                                </td>
+                              </tr>
+                            )
+                         )}
                       </tbody>
                     </table>
                   </div>
@@ -207,30 +255,46 @@ const Dashboard = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Name
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Location
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Price Per Hour
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Capacity
                           </th>
 
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Created At
                           </th>
-
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {venues.map(venue => (
+                        {venues.map((venue) => (
                           <tr key={venue._id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm  text-orange-600 font-bold">
-                              <Link to={`/venues/${venue._id}`}>{venue.name}</Link>
+                              <Link to={`/venues/${venue._id}`}>
+                                {venue.name}
+                              </Link>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {venue.location}
@@ -245,14 +309,11 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {new Date(venue.createdAt).toLocaleString()}
                             </td>
-
                           </tr>
                         ))}
                       </tbody>
-
                     </table>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -271,19 +332,28 @@ const Dashboard = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Comment
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Rating
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
                             Date
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {reviewsByVenue.map(review => (
+                        {reviewsByVenue.map((review) => (
                           <tr key={review._id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-normal text-gray-900">
                               {review.comment}
@@ -303,7 +373,6 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </main>

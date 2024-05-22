@@ -122,6 +122,14 @@ console.log(userId==decodedToken.id);
     fetchData();
   }, [userId]);
 
+
+  const handleChangereject=(e)=>{
+    console.log(user.isrejected,";;",e.target.value);
+    setUser((prevUser)=>({
+      ...prevUser,
+      isrejected:e.target.value,
+    }))
+  }
   const handlephoneno=(e)=>{
     const value=e.target.value;
     if (value.length!=10) {
@@ -595,7 +603,7 @@ console.log(userId==decodedToken.id);
                   name="isRejected"
                   disabled={readonly}
                   value={user.isrejected}
-                  onChange={handleChange}
+                  onChange={handleChangereject}
                   className="w-full rounded-md border border-gray-400 p-2 text-sm"
                 >
                   <option value={true}>Yes</option>

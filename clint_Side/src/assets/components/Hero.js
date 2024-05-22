@@ -14,7 +14,7 @@ const Hero = () => {
       <section className="py-16 bg-gray-100 overflow-hidden">
         {" "}
         {/* Ensure overflow is hidden */}
-        <div className="container mx-auto">
+        <div className="container mx-auto ">
           <div className="flex flex-wrap p-5 items-center">
             <div className="lg:w-6/12 lg:pr-4">
               <div className="hero__content">
